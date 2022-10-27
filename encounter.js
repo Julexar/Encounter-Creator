@@ -23,7 +23,7 @@ API Commands (GM Only):
             --name {Insert Name} - Sets the Name of the Monster
             --type {Insert Type} - Sets the Monster's type
             --ac {Insert Numer} --type {Insert AC Type} - Sets the Monster's AC
-            --hp {Insert Number} - Sets the Monster's AC
+            --hp {Insert Number} - Sets the Monster's HP
             --speed {Insert Speed} - Sets the Monster's Speed
             --attr {Insert Attribute} --{Insert value} - Sets the Attribute of a Monster
             --save {Insert Attribute} --{Insert value} - Sets the save bonus of a Monster
