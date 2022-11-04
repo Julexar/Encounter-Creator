@@ -7,7 +7,8 @@ API Commands (GM Only):
     --{Insert Name/Number} - Shows the specifics of an Encounter by Name/Number
         --edit - Edit a specific Encounter
             --name {Insert Name} - Change the name of the Encounter
-            --party add/rem --name/id {Insert Character Name/ID} - Adds/Removes a Character
+            --party {Insert Party name} - Selects a Party
+                --add/rem --name/id {Insert Character Name/ID} - Adds/Removes a Character
             --cr min/max {Insert min/max CR} - Change the min/max CR of the Monsters in the Encounter
             --monsters add/rem {Insert Monster Name} - Adds/Removes a Monster
             --monster {Insert Monster Name} - Pulls up the Monster Editor
@@ -17,7 +18,8 @@ API Commands (GM Only):
         --loot gen {Insert amount} --minrare {Insert minimum rarity} --maxrare {Insert maximum rarity} - Generates a loot table
             --overwrite true/false - Specifies if the old loot table should be replaced
         --submit - Finishes the encounter creation and creates Monsters as well as a Handout for loot
-        --reset - Resets the encounter to the default
+        --delete - Deletes the Encounter
+    --reset - Resets the encounter to the default
 !monster - Pulls up the Monster Menu
     --{Insert Monster name} - Selects a specific Monster
         --edit - Pulls up the Monster Editor
@@ -285,7 +287,10 @@ var EncounterCreator = EncounterCreator || (function() {
                         let name = args[1].replace("create ","");
                         createEnc(name);
                         encounterMenu(name);
-                    } else if (args[1]!==undefined && !args[1].includes("create")) {
+                    } else if (args[1]=="reset") {
+                        resetEnc();
+                        encounterMenu(undefined);
+                    } else if (args[1]!==undefined && !args[1].includes("create") && args[1]!=="reset") {
                         let enc = args[1];
                         if (!args[2]) {
                             encounterMenu(enc);
@@ -300,8 +305,17 @@ var EncounterCreator = EncounterCreator || (function() {
                                     encounterMenu(name);
                                 } else if (args[3].includes("party")) {
                                     party=args[3].replace("party ","");
-                                    editEncounter(enc,"party",party);
-                                    encounterMenu(enc);
+                                    if (!args[4]) {
+                                        encounterMenu(enc,party);
+                                    } else if (args[4]=="add" || args[4]=="rem") {
+                                        if (!args[5]) {
+                                            sendChat("Encounter Creator","/w gm You must define a Character you wish to add!");
+                                        } else if (args[5].includes("name") || args[5].includes("id")) {
+                                            charident=args[5];
+                                            editEncounter(enc,`party${args[4]}`,party,charident);
+                                            encounterMenu(enc,party);
+                                        }
+                                    }
                                 } else if (args[3].includes("cr")) {
                                     if (args[3].includes("min")) {
                                         cr=Number(args[3].replace("cr min ",""));
@@ -933,8 +947,88 @@ var EncounterCreator = EncounterCreator || (function() {
         }
     },
 
-    encounterMenu = function(enc) {
+    encounterMenu = function(enc,party) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+        enc=state.encounter.find(e => e.name==enc);
+        let encounters=[];
+        for (let i=0;i<state.encounter.length;i++) {
+            encounters.push(state.encounter[i].name);
+        }
+        let len=encounters.length;
+        for (let i=0;i<len;i++) {
+            encounters=String(encounters).replace(",","|");
+        }
+        let parties=[];
+        for (let i=0;i<enc.party.length;i++) {
+            parties.push(enc.party[i].name);
+        };
+        len=parties.length;
+        for (let i=0;i<len;i++) {
+            parties=String(parties).replace(",","|");
+        }
+        if (!enc) {
+            sendChat("Encounter Creator","/w gm Invalid Encounter!");
+        } else if (enc) {
+            let loot=enc.loot;
+            let monsters=enc.monsters;
+            party=enc.party.find(p => p.name==party);
+            let memberlist='';
+            let trborder='style="border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; border-bottom: 1px solid #cccccc;"';
+            let tdborder='style="border-left: 1px solid #cccccc; border-right: 1px solid #cccccc;"';
+            let tdborder2='style="border-rigth: 1px solid #cccccc;"';
+            for (let i=0;i<party.members.length;i++) {
+                memberlist+='<tr '+trborder+'><td '+tdborder+'>'+party.members[i].level+'</td><td '+tdborder2+'>'+party.members[i].class+'</td><td '+tdborder2+'>'+party.members[i].name+'</td></tr>';
+            }
+            let members=[];
+            for (let i=0;i<party.members.length;i++) {
+                members.push(party.members[i].name);
+            }
+            len=members.length;
+            for (let i=0;i<len;i++) {
+                members=String(members).replace(",","|");
+            }
+            sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                '<div ' + headstyle + '>Encounter Menu</div>' + //--
+                '<div ' + arrowstyle + '></div>' + //--
+                '<table ' + tablestyle + '>' + //--
+                '<tr><td>Encounter: </td><td><a ' + astyle1 + '" href="!enc --?{' + encounters + '}">' + enc.name + '</a></td></tr>' + //--
+                '<tr><td>Min CR: </td><td><a ' + astyle3 + '" href="!enc --' + enc.name + ' --edit --cr min ?{Min CR?|0}">' + enc.crmin + '</a></td></tr>' + //--
+                '<tr><td>Max CR: </td><td><a ' + astyle3 + '" href="!enc --' + enc.name + ' --edit --cr max ?{Max CR?|0}">' + enc.crmax + '</a></td></tr>' + //--
+                '</table>' + //--
+                '<br>' + //--
+                '<table ' + tablestyle + '>' + //--
+                '<tr><td>Party: </td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --party ?{Party?|' + parties + '}">' + party.name + '</a></td></tr>' + //--
+                '</table>' + //--
+                '<br>' + //--
+                '<table>' + //--
+                '<thead><tr ' + trstyle + '><th>Lvl.</th><th>Class</th><th>Name</th></tr></thead>' + //--
+                '<tbody>' + memberlist + '</tbody>' + //--
+                '</table>' + //--
+                '<table>' + //--
+                '<tr><td style="text-align:left;"><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --party ' + party.name + ' --add --name ?{Member?|' + members + '}">Add Member</a></td>' + //--
+                '<td style="text-align:right;"><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --party ' + party.name + '--rem --name ?{Member?|' + members + '}">Rem Member</a></td></tr>' + //--
+                '</table>' + //--
+                //Monsters
 
+                //Loot
+
+                '<br><br>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --edit --name ?{Name?|Insert Name}">' + enc.name + '</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --submit">Finish Setup</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --reset">Reset Encounters</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --create ?{Name?|Insert Name}">Create Encounter</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --delete">Delete Encounter</a></div>' + //--
+                '</div>'
+            );
+        }
     },
 
     createEnc = function(enc) {
@@ -953,7 +1047,7 @@ var EncounterCreator = EncounterCreator || (function() {
 
     },
 
-    resetEnc = function(enc) {
+    resetEnc = function() {
 
     },
 
