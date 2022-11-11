@@ -10,13 +10,17 @@ API Commands (GM Only):
             --party {Insert Party name} - Selects a Party
                 --add/rem --name/id {Insert Character Name/ID} - Adds/Removes a Character
             --cr min/max {Insert min/max CR} - Change the min/max CR of the Monsters in the Encounter
-            --monsters add/rem {Insert Monster Name} - Adds/Removes a Monster
-            --monster {Insert Monster Name} - Pulls up the Monster Editor
-                (check !monster under edit for further options)
-            --loot add {Insert Item Name} --val {Insert Item value} - Adds an item to the loot table
-            --loot rem {Insert Item Name} - Removes an item from the loot table
-        --loot gen {Insert amount} --minrare {Insert minimum rarity} --maxrare {Insert maximum rarity} - Generates a loot table
+            --monster - Edits a Monster
+                --add/rem {Insert existing Monster Name} - Adds/Removes a Monster
+                --{Insert existing Monster Name} - Edits a Monster inside the Encounter
+            --loot - Edits Loot Table
+                --add {Insert Item Name} --val {Insert Item value} - Adds an item to the loot table
+                --rem {Insert Item Name} - Removes an item from the loot table
+                --{Insert existing Item Name} - Edits an Item inside the Encounter
+        --genloot {Insert amount} --minrare {Insert minimum rarity} --maxrare {Insert maximum rarity} - Generates a loot table
             --overwrite true/false - Specifies if the old loot table should be replaced
+        --loot - Shows the Loot table
+        --monsters - Shows a list of all Monsters
         --submit - Finishes the encounter creation and creates Monsters as well as a Handout for loot
         --delete - Deletes the Encounter
     --reset - Resets the encounter to the default
@@ -143,6 +147,7 @@ var EncounterCreator = EncounterCreator || (function() {
             {
                 //Basics
                 items: [],
+                gold: 0,
             },
         ];
     },
@@ -167,6 +172,7 @@ var EncounterCreator = EncounterCreator || (function() {
                 actype: "",
                 hp: 0,
                 speed: "",
+                amount: 1,
                 save: [
                     {
                         //Basics
@@ -325,35 +331,41 @@ var EncounterCreator = EncounterCreator || (function() {
                                         editEncounter(enc,"crmax",cr);
                                     }
                                     encounterMenu(enc);
-                                } else if (args[3].includes("monsters")) {
-                                    if (args[3].includes("add")) {
-                                        monster=args[3].replace("monsters add ","");
-                                        editEncounter(enc,"addmon",monster);
-                                    } else if (args[3].includes("rem")) {
-                                        monster=args[3].repalce("monsters rem ","");
-                                        editEncounter(enc,"remmon",monster);
-                                    }
-                                    encounterMenu(enc);
                                 } else if (args[3].includes("monster")) {
-                                    monster=args[3].replace("monster ","");
-                                    monsterMenu(monster);
+                                    if (!args[4]) {
+                                        viewMonsters(enc);
+                                    } else if (args[4].includes("add")) {
+                                        monster=args[4].replace("add ","");
+                                        editEncounter(enc,"addmon",monster);
+                                    } else if (args[4].includes("rem")) {
+                                        monster=args[4].replace("rem ","");
+                                        editEncounter(enc,"remmon",monster);
+                                    } else if (!args[4].includes("add") && !args[4].includes("rem")) {
+                                        monster=args[4];
+                                        editEncounter(enc,"monster",monster);
+                                    }
                                 } else if (args[3].includes("loot")) {
-                                    if (args[3].includes("add")) {
-                                        item=args[3].replace("loot add ","");
-                                        if (!args[4]) {
+                                    if (!args[4]) {
+                                        viewLoot(enc);
+                                    } else if (args[4].includes("add")) {
+                                        item=args[4].replace("add ","");
+                                        if (!args[5]) {
                                             sendChat("Encounter Creator","/w gm You need to define a value!");
-                                        } else if (args[4].includes("val")) {
-                                            val=Number(args[4].replace("val ",""));
+                                        } else if (args[5].includes("val")) {
+                                            val=Number(args[5].replace("val ",""));
                                             editEncounter(enc,"addloot",item,val);
                                         }
-                                    } else if (args[3].includes("rem")) {
-                                        item=args[3].replace("loot rem ","");
+                                    } else if (args[4].includes("rem")) {
+                                        item=args[4].replace("rem ","");
                                         editEncounter(enc,"remloot",item);
+                                    } else if (!args[4].includes("add") && !args[4].includes("rem")) {
+                                        item=args[4];
+                                        editEncounter(enc,"item",item);
                                     }
                                 }
                             }
-                        } else if (args[2].includes("loot gen")) {
-                            let amount = Number(args[2].replace("loot gen ",""));
+                        } else if (args[2].includes("genloot")) {
+                            let amount = Number(args[2].replace("genloot ",""));
                             if (!args[3]) {
                                 sendChat("Encounter Creator","/w gm You must define a minimum and maximum Rarity!");
                             } else if (args[3].includes("minrare")) {
@@ -379,6 +391,10 @@ var EncounterCreator = EncounterCreator || (function() {
                                     }
                                 }
                             }
+                        } else if (args[2]=="loot") {
+                            viewLoot(enc);
+                        } else if (args[2]=="monsters") {
+                            viewMonsters(enc);
                         } else if (args[2]=="submit") {
                             submitEnc(enc);
                         } else if (args[2]=="reset") {
@@ -977,8 +993,6 @@ var EncounterCreator = EncounterCreator || (function() {
         if (!enc) {
             sendChat("Encounter Creator","/w gm Invalid Encounter!");
         } else if (enc) {
-            let loot=enc.loot;
-            let monsters=enc.monsters;
             party=enc.party.find(p => p.name==party);
             let memberlist='';
             let trborder='style="border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; border-bottom: 1px solid #cccccc;"';
@@ -1016,10 +1030,10 @@ var EncounterCreator = EncounterCreator || (function() {
                 '<tr><td style="text-align:left;"><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --party ' + party.name + ' --add --name ?{Member?|' + members + '}">Add Member</a></td>' + //--
                 '<td style="text-align:right;"><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --party ' + party.name + '--rem --name ?{Member?|' + members + '}">Rem Member</a></td></tr>' + //--
                 '</table>' + //--
-                //Monsters
-
-                //Loot
-
+                '<br><br>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --monsters">View Monsters</a></div>' + //--
+                '<br>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --loot">View Loot</a></div>' + //--
                 '<br><br>' + //--
                 '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --edit --name ?{Name?|Insert Name}">' + enc.name + '</a></div>' + //--
                 '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --submit">Finish Setup</a></div>' + //--
@@ -1032,7 +1046,23 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     createEnc = function(enc) {
-
+        let test=state.encounter.find(e => e.name==enc);
+        if (test) {
+            sendChat("Encounter Creator","/w gm An Encounter with that Name exists already, aborting...");
+        } else if (!test) {
+            let newenc = [
+                {
+                    name: enc,
+                    mincr: 0,
+                    maxcr: 0,
+                    loot: [],
+                    monsters: [],
+                    party: []
+                }
+            ];
+            state.encounter.push(newenc[0]);
+            sendChat("Encounter Creator",`/w gm Created the Encounter \"${enc}\".`);
+        }
     },
 
     editEncounter = function(enc,option,val1,val2) {
@@ -1051,7 +1081,140 @@ var EncounterCreator = EncounterCreator || (function() {
 
     },
 
+    viewMonsters = function(enc) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+        let trborder = 'style="border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; border-bottom: 1px solid #cccccc;"';
+        let tdborder = 'style="border-left: 1px solid #cccccc; border-right: 1px solid #cccccc;"';
+        let tdborder2 = 'style="border-rigth: 1px solid #cccccc;"';
+        enc=state.encounter.find(e => e.name==enc);
+        let monsters = enc.monsters;
+        let monsterList="";
+        let list=[];
+        let enclist=[];
+        let fullMonList=[];
+        for (let i=0;i<state.encounter.length;i++) {
+            enclist.push(state.encounter[i].name);
+        }
+        let len1=enclist.length;
+        for (let i=0;i<len1;i++) {
+            enclist=String(enclist).replace(",","|");
+        }
+        for (let i=0;i<state.monster.length;i++) {
+            fullMonList.push(state.monster[i].name);
+        }
+        let len2 = fullMonList.length;
+        for (let i=0;i<len2;i++) {
+            fullMonList=String(fullMonList).replace(",","|");
+        }
+        if (monsters.length && monsters.length>0) {
+            for (let i=0;i<monsters.length;i++) {
+                monsterList+='<tr '+trborder+'><td '+tdborder2+'>'+monsters[i].name+'</td><td '+tdborder2+'>'+monsters[i].type+'</td><td '+tdborder2+'>'+monsters[i].hp+'</td><td '+tdborder2+'>'+monsters[i].ac+'</td><td>'+monsters[i].cr+'</td></tr>';
+                list.push(monsters[i].name);
+            }
+            let len=list.length;
+            for (let i=0;i<len;i++) {
+                list=String(list).replace(',','|');
+            }
+            sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                '<div ' + headstyle + '>Monster List</div>' + //--
+                '<div ' + arrowstyle + '></div>' + //--
+                '<table ' + tablestyle + '>' + //--
+                '<tr><td style="text-align:left;">Encounter: </td><td style="text-align:center;"><a ' + astyle1 + '" href="!enc --?{Encounter?|' + enclist + '} --monsters">' + enc.name + '</a></td></tr>' + //--
+                '</table>' + //--
+                '<br><br>' + //--
+                '<table>' + //--
+                '<thead>' + //--
+                '<tr ' + trstyle + '><th ' + tdborder2 + '>Name</th><th ' + tdborder2 + '>Type</th><th ' + tdborder2 + '>HP</th><th ' + tdborder2 + '>AC</th><th>CR</th></tr>' + //--
+                '</thead>' + //--
+                '<tbody>' + //--
+                monsterList + //--
+                '</tbody>' + //--
+                '</table>' + //--
+                '<br><br>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --edit --monster --?{Monster?|' + list + '}">Edit Monster</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --monster --add ?{Monster?|' + fullMonList + '}">Add Monster</a>' + //--
+                '<a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --monster --rem ?{Monster?|' + list + '}">Rem. Monster</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + '">Go Back</a></div>' + //--
+                '</div>'
+            );
+        }
+    },
+
+    viewLoot = function(enc) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+        let trborder = 'style="border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; border-bottom: 1px solid #cccccc;"';
+        let tdborder = 'style="border-left: 1px solid #cccccc; border-right: 1px solid #cccccc;"';
+        let tdborder2 = 'style="border-rigth: 1px solid #cccccc;"';
+        enc=state.enc.find(e => e.name==enc);
+        let loot = enc.loot;
+        let lootList = "";
+        let items=[];
+        let enclist=[];
+        for (let i=0;i<state.enc.length;i++) {
+            enclist.push(state.enc[i].name);
+        }
+        let len1=enclist.length;
+        for (let i=0;i<len1;i++) {
+            enclist=String(enclist).replace(",","|");
+        }
+        if (loot.length && loot.length>0) {
+            for (let i=0;i<loot.length;i++) {
+                let desc=String(loot[i].desc).split(';');
+                lootList='<tr ' + trborder + '><td ' + tdborder2 + '>' + loot[i].name + '</td><td ' + tdborder2 + '>' + desc[0] + '</td><td>' + loot[i].price + '</td></tr>';
+                items.push(loot[i].name);
+            }
+            let len=items.length;
+            for (let i=0;i<len;i++) {
+                items=String(items).replace(",","|");
+            }
+            sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                '<div ' + headstyle + '>Loot Table</div>' + //--
+                '<div ' + arrowstyle + '></div>' + //--
+                '<table ' + tablestyle + '>' + //--
+                '<tr><td style="text-align:left;">Encounter: </td><td style="text-align:center;"><a ' + astyle1 + '" href="!enc --?{Encounter?|' + enclist + '} --loot">' + enc.name + '</a></td></tr>' + //--
+                '</table>' + //--
+                '<br><br>' + //--
+                '<table>' + //--
+                '<thead>' + //--
+                '<tr ' + trstyle + '><th ' + tdborder2 + '>Name</th><th ' + tdborder2 + '>Description</th><th>Price (GP)</th></tr>' + //--
+                '</thead>' + //--
+                '<tbody>' + //--
+                lootList + //--
+                '</tbody>' + //--
+                '</table>' + //--
+                '<br><br>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --edit --loot --?{Item?|' + items + '}">Edit Item</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --genloot ?{Amount?|1} --minrare ?{Minimum Rarity?|Common|Uncommon|Rare|Very Rare|Legendary} --maxrare ?{Maximum Rarity?|Common|Uncommon|Rare|Very Rare|Legendary} --overwrite ?{Overwrite Table?|true|false}">Generate Loot</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + '">Go Back</a></div>' + //--
+                '</div>'
+            );
+        }
+    },
+
     monsterMenu = function(mon) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
 
     },
 
@@ -1060,6 +1223,15 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     traitEditor = function(mon,trait) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
 
     },
 
@@ -1068,6 +1240,15 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     baEditor = function(mon,ba) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
 
     },
 
@@ -1076,6 +1257,15 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     actEditor = function(mon,act) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
 
     },
 
@@ -1084,6 +1274,15 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     reactEditor = function(mon,react) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
 
     },
 
@@ -1092,6 +1291,15 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     legEditor = function(mon,leg) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
 
     },
 
@@ -1100,6 +1308,15 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     mythEditor = function(mon,myth) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
 
     },
 
@@ -1107,11 +1324,62 @@ var EncounterCreator = EncounterCreator || (function() {
 
     },
 
+    createAct = function(mon,act) {
+
+    },
+
+    createReact = function(mon,react,desc) {
+
+    },
+
+    createBA = function(mon,ba) {
+
+    },
+
+    createTrait = function(mon,trait,desc) {
+
+    },
+
+    createLeg = function(mon,leg) {
+
+    },
+
+    createMyth = function(mon,myth) {
+
+    },
+
     resetMonster = function(mon) {
 
     },
 
-    
+    createParty = function(party) {
+
+    },
+
+    partyMenu = function(party) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+
+    },
+
+    partyAdd = function(party,char) {
+
+    },
+
+    partyRem = function(party,char) {
+
+    },
+
+    deleteParty = function(party) {
+
+    },
 
     checkDefaults = function() {
         if (!state.encounter) {
