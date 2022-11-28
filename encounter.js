@@ -1550,6 +1550,11 @@ var EncounterCreator = EncounterCreator || (function() {
                         '</table>' + //--
                         '<br><br>' + //--
                         '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --setname ?{Name?|Insert Name}">Set Name</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --setdesc ?{Description?|Insert Desc}">Set Description</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --add ?{Name?|Insert Name}">Add Action</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --rem ?{Action?|' + actlist + '}">Remove Action</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                        '</div>'
                     );
                 }
             } else if (!act) {
@@ -1591,7 +1596,21 @@ var EncounterCreator = EncounterCreator || (function() {
         var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
         var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
         var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
-
+        var trstyle2 = 'style="border-bottom: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align:left;"';
+        var tdstyle = 'style="border-right: 1px solid #cccccc;"';
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find an Reaction with that name!");
+        } else if (mon) {
+            let reactlist = [];
+            let reacts = "";
+            for (let i=0;i<mon.reactions.length;i++) {
+                reacts += '<tr ' + trstyle2 + '><td ' + tdstyle + '>' + Number(i+1) + '</td><td>' + mon.reactions[i].name + '</td></tr>';
+                reactlist.push(mon.reactions[i].name);
+            }
+            let len = reactlist.length;
+            for (let i=0;i)
+        }
     },
 
     editReact = function(mon,react,option,val) {
