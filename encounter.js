@@ -7,18 +7,25 @@ API Commands (GM Only):
     --{Insert Name/Number} - Shows the specifics of an Encounter by Name/Number
         --edit - Edit a specific Encounter
             --name {Insert Name} - Change the name of the Encounter
-            --party add/rem --name/id {Insert Character Name/ID} - Adds/Removes a Character
+            --party {Insert Party name} - Selects a Party
+                --add/rem --name/id {Insert Character Name/ID} - Adds/Removes a Character
             --cr min/max {Insert min/max CR} - Change the min/max CR of the Monsters in the Encounter
-            --monsters add/rem {Insert Monster Name} - Adds/Removes a Monster
-            --monster {Insert Monster Name} - Pulls up the Monster Editor
-                (check !monster under edit for further options)
-            --loot add {Insert Item Name} --val {Insert Item value} - Adds an item to the loot table
-            --loot rem {Insert Item Name} - Removes an item from the loot table
-        --loot gen {Insert amount} --minrare {Insert minimum rarity} --maxrare {Insert maximum rarity} - Generates a loot table
+            --monster - Edits a Monster
+                --add/rem {Insert existing Monster Name} - Adds/Removes a Monster
+                --{Insert existing Monster Name} - Edits a Monster inside the Encounter
+            --loot - Edits Loot Table
+                --add {Insert Item Name} --val {Insert Item value} - Adds an item to the loot table
+                --rem {Insert Item Name} - Removes an item from the loot table
+                --{Insert existing Item Name} - Edits an Item inside the Encounter
+        --genloot {Insert amount} --minrare {Insert minimum rarity} --maxrare {Insert maximum rarity} - Generates a loot table
             --overwrite true/false - Specifies if the old loot table should be replaced
+        --loot - Shows the Loot table
+        --monsters - Shows a list of all Monsters
         --submit - Finishes the encounter creation and creates Monsters as well as a Handout for loot
-        --reset - Resets the encounter to the default
+        --delete - Deletes the Encounter
+    --reset - Resets the encounter to the default
 !monster - Pulls up the Monster Menu
+    --new {Insert Monster name} - Creates a new Monster
     --{Insert Monster name} - Selects a specific Monster
         --edit - Pulls up the Monster Editor
             --name {Insert Name} - Sets the Name of the Monster
@@ -54,27 +61,23 @@ API Commands (GM Only):
                 --{Insert Bonus action name} - Selects a specific bonus action
                     --setname {Insert Name} - Sets the name of a bonus action
                     --setdesc {Insert Desc} - Sets the Description of a bonus action
-                    --toggleatk --range {Insert range} --tohit {Insert number} - Toggles the bonus action to be an attack and sets the range and to hit
-                    --setdmg {Insert damage dice} --type {Insert damage type} - Sets the damage of the bonus action
+                    --toggleatk - Toggles the bonus action to be an attack
+                    --setrange {Insert range} - Sets the range of the attack
+                    --settohit {Insert to hit} - Sets the to hit bonus of the attack
+                    --setdmg {Insert damage dice} --type {Insert damage type} - Sets the damage dice and type of the bonus action
+                    --setatktype Melee/Ranged - Sets the attack to me a Melee or Ranged Attack
                 --add {Insert Bonus action name} - adds a bonus action
-                    --desc {Insert Desc} - Sets the description
-                    --dmg {Insert damage dice} --type {Insert damage type} - Sets the damage (and damage type)
-                    --atk true/false - toggles attack and sets range and to hit
-                        Required when true:
-                        --range {Insert range} --tohit {Insert number}
                 --rem {Insert Bonus action name} - removes a bonus action
             --actions - Pulls up the Action Editor
                 --{Insert Action name} - Selects a specific action
                     --setname {Insert Name} - Sets the name of an Action
                     --setdesc {Insert Desc} - Sets the Description of an Action
-                    --toggleatk --range {Insert range} - Toggles the action to be an attack and sets the range
+                    --toggleatk - Toggles the Action to have an Attack
+                    --setrange {Insert range} - Sets the Range of the Attack
+                    --settohit {Insert to hit} - Sets the to hit bonus of the attack
                     --setdmg {Insert damage dice} --type {Insert damage type} - Sets the damage and damage type of an Action
+                    --setatktype Melee/Ranged - Sets the attack to me a Melee or Ranged Attack
                 --add {Insert Action name} - adds an action
-                    --desc {Insert Desc} - Sets the description
-                    --dmg {Insert damage dice} --type {Insert damage type} - Sets the damage and damage type
-                    --atk true/false - toggles attack and sets range and to hit
-                        Required when true:
-                        --range {Insert range} --tohit {Insert number}
                 --rem {Insert action name} - removes an action
             --reactions - Pulls up the reaction editor
                 --{Insert Reaction name} - Selects a specific reaction
@@ -87,34 +90,31 @@ API Commands (GM Only):
                 --{Insert Leg. Action name} - Selects a specific legendary action
                     --setname {Insert Name} - Sets the name of a legendary Action
                     --setdesc {Insert Desc} - Sets the Description of a legendary Action
-                    --toggleatk --range {Insert range} - Toggles the legendary action to be an attack and sets the range
+                    --toggleatk - Toggels the legendary Action to have an Attack
+                    --setrange {Insert range} - Sets the Range of the Attack
+                    --settohit {Insert to hit} - Sets the to hit bonus of the attack
                     --setdmg {Insert damage dice} --type {Insert damage type} - Sets the damage and damage type of a legendary Action
+                    --setatktype Melee/Ranged - Sets the attack to me a Melee or Ranged Attack
                 --add {Insert Leg. Action name} - Adds a legendary action
-                    --desc {Insert Desc} - Sets the description
-                        --dmg {Insert damage dice} --type {Insert damage type} - Sets the damage and damage type
-                        --atk true/false - toggles attack and sets range and to hit
-                            Required when true:
-                            --range {Insert range} --tohit {Insert number}
                 --rem {Insert Leg. Action name} - Removes a legendary action
             --mythic_actions - pulls up the mythic action editor
                 --{Insert myth. Action name} - Selects a specific mythic action
                     --setname {Insert Name} - Sets the name of a mythic Action
                     --setdesc {Insert Desc} - Sets the Description of a mythic Action
-                    --toggleatk --range {Insert range} - Toggles the mythic action to be an attack and sets the range
+                    --toggleatk - Toggles the mythic Action to have an Attack
+                    --setrange {Insert range} - Sets the range of the Attack
+                    --settohit {Insert to hit} - Sets the to hit bonus of the attack
                     --setdmg {Insert damage dice} --type {Insert damage type} - Sets the damage and damage type of a mythic Action
-                --add {Insert Leg. Action name} - Adds a mythic action
-                    --desc {Insert Desc} - Sets the description
-                        --dmg {Insert damage dice} --type {Insert damage type} - Sets the damage and damage type
-                        --atk true/false - toggles attack and sets range and to hit
-                            Required when true:
-                            --range {Insert range} --tohit {Insert number}
-                --rem {Insert Leg. Action name} - Removes a mythic action
+                    --setatktype Melee/Ranged - Sets the attack to me a Melee or Ranged Attack
+                --add {Insert Myth. Action name} - Adds a mythic action
+                --rem {Insert Myth. Action name} - Removes a mythic action
+        --del - Deletes the Monster
         --reset - Resets the monster to the defaults
 !party - pulls up the Party Menu
     --new {Insert Name} - creates a new Party
     --{Insert Party name} - Selects a Party
-        --add --name/id {Insert Character Name/ID} - Adds a Character to the Party
-        --rem --name/id {Insert Character Name/ID} - Removes a Character from the Party
+        --add --name/id/sel {Insert Character Name/ID OR select Character Token} - Adds a Character to the Party
+        --rem --name/id/sel {Insert Character Name/ID OR select Character Token} - Removes a Character from the Party
         --del - Deletes the Party
 */
 var EncounterCreator = EncounterCreator || (function() {
@@ -141,6 +141,7 @@ var EncounterCreator = EncounterCreator || (function() {
             {
                 //Basics
                 items: [],
+                gold: 0,
             },
         ];
     },
@@ -160,11 +161,13 @@ var EncounterCreator = EncounterCreator || (function() {
             {
                 //Basics
                 name: "",
+                id: "",
                 type: "",
                 ac: 10,
                 actype: "",
                 hp: 0,
                 speed: "",
+                amount: 1,
                 save: [
                     {
                         //Basics
@@ -271,6 +274,13 @@ var EncounterCreator = EncounterCreator || (function() {
         ];
     },
 
+    setBasicDefaults = function() {
+        state.encbasics = {
+            dmgtype: "Acid|Bludgeoning|Cold|Fire|Force|Lightning|Magical Bludgeoning|Magical Piercing|Magical Slashing|Necrotic|Piercing|Poison|Psychic|Radiant|Slashing|Thunder",
+            atktype: "Melee|Ranged",
+        };
+    },
+
     handleInput = function(msg) {
         var args=msg.content.split(/\s+--/);
         if (msg.type!=="api") {
@@ -285,7 +295,10 @@ var EncounterCreator = EncounterCreator || (function() {
                         let name = args[1].replace("create ","");
                         createEnc(name);
                         encounterMenu(name);
-                    } else if (args[1]!==undefined && !args[1].includes("create")) {
+                    } else if (args[1]=="reset") {
+                        resetEnc();
+                        encounterMenu(undefined);
+                    } else if (args[1]!==undefined && !args[1].includes("create") && args[1]!=="reset") {
                         let enc = args[1];
                         if (!args[2]) {
                             encounterMenu(enc);
@@ -300,8 +313,17 @@ var EncounterCreator = EncounterCreator || (function() {
                                     encounterMenu(name);
                                 } else if (args[3].includes("party")) {
                                     party=args[3].replace("party ","");
-                                    editEncounter(enc,"party",party);
-                                    encounterMenu(enc);
+                                    if (!args[4]) {
+                                        encounterMenu(enc,party);
+                                    } else if (args[4]=="add" || args[4]=="rem") {
+                                        if (!args[5]) {
+                                            sendChat("Encounter Creator","/w gm You must define a Character you wish to add!");
+                                        } else if (args[5].includes("name") || args[5].includes("id")) {
+                                            charident=args[5];
+                                            editEncounter(enc,`party${args[4]}`,party,charident);
+                                            encounterMenu(enc,party);
+                                        }
+                                    }
                                 } else if (args[3].includes("cr")) {
                                     if (args[3].includes("min")) {
                                         cr=Number(args[3].replace("cr min ",""));
@@ -311,35 +333,41 @@ var EncounterCreator = EncounterCreator || (function() {
                                         editEncounter(enc,"crmax",cr);
                                     }
                                     encounterMenu(enc);
-                                } else if (args[3].includes("monsters")) {
-                                    if (args[3].includes("add")) {
-                                        monster=args[3].replace("monsters add ","");
-                                        editEncounter(enc,"addmon",monster);
-                                    } else if (args[3].includes("rem")) {
-                                        monster=args[3].repalce("monsters rem ","");
-                                        editEncounter(enc,"remmon",monster);
-                                    }
-                                    encounterMenu(enc);
                                 } else if (args[3].includes("monster")) {
-                                    monster=args[3].replace("monster ","");
-                                    monsterMenu(monster);
+                                    if (!args[4]) {
+                                        viewMonsters(enc);
+                                    } else if (args[4].includes("add")) {
+                                        monster=args[4].replace("add ","");
+                                        editEncounter(enc,"addmon",monster);
+                                    } else if (args[4].includes("rem")) {
+                                        monster=args[4].replace("rem ","");
+                                        editEncounter(enc,"remmon",monster);
+                                    } else if (!args[4].includes("add") && !args[4].includes("rem")) {
+                                        monster=args[4];
+                                        editEncounter(enc,"monster",monster);
+                                    }
                                 } else if (args[3].includes("loot")) {
-                                    if (args[3].includes("add")) {
-                                        item=args[3].replace("loot add ","");
-                                        if (!args[4]) {
+                                    if (!args[4]) {
+                                        viewLoot(enc);
+                                    } else if (args[4].includes("add")) {
+                                        item=args[4].replace("add ","");
+                                        if (!args[5]) {
                                             sendChat("Encounter Creator","/w gm You need to define a value!");
-                                        } else if (args[4].includes("val")) {
-                                            val=Number(args[4].replace("val ",""));
+                                        } else if (args[5].includes("val")) {
+                                            val=Number(args[5].replace("val ",""));
                                             editEncounter(enc,"addloot",item,val);
                                         }
-                                    } else if (args[3].includes("rem")) {
-                                        item=args[3].replace("loot rem ","");
+                                    } else if (args[4].includes("rem")) {
+                                        item=args[4].replace("rem ","");
                                         editEncounter(enc,"remloot",item);
+                                    } else if (!args[4].includes("add") && !args[4].includes("rem")) {
+                                        item=args[4];
+                                        editEncounter(enc,"item",item);
                                     }
                                 }
                             }
-                        } else if (args[2].includes("loot gen")) {
-                            let amount = Number(args[2].replace("loot gen ",""));
+                        } else if (args[2].includes("genloot")) {
+                            let amount = Number(args[2].replace("genloot ",""));
                             if (!args[3]) {
                                 sendChat("Encounter Creator","/w gm You must define a minimum and maximum Rarity!");
                             } else if (args[3].includes("minrare")) {
@@ -365,6 +393,10 @@ var EncounterCreator = EncounterCreator || (function() {
                                     }
                                 }
                             }
+                        } else if (args[2]=="loot") {
+                            viewLoot(enc);
+                        } else if (args[2]=="monsters") {
+                            viewMonsters(enc);
                         } else if (args[2]=="submit") {
                             submitEnc(enc);
                         } else if (args[2]=="reset") {
@@ -375,7 +407,7 @@ var EncounterCreator = EncounterCreator || (function() {
                 case '!monster':
                     if (!args[1]) {
                         monsterMenu(args[1]);
-                    } else if (args[1]) {
+                    } else if (!args[1].includes("new")) {
                         let monster = args[1];
                         if (!args[2]) {
                             monsterMenu(monster);
@@ -536,13 +568,8 @@ var EncounterCreator = EncounterCreator || (function() {
                                     }
                                 } else if (args[4].includes("add")) {
                                     let name=args[4].replace("add ","");
-                                    if (!args[5]) {
-                                        sendChat("Encounter Creator","/w gm You must define a description for the Trait!");
-                                    } else if (args[5].includes("desc")) {
-                                        let desc=args[5].replace("desc ","");
-                                        createTrait(monster,name,desc);
-                                        traitEditor(monster,name);
-                                    }
+                                    createTrait(monster,name);
+                                    traitEditor(monster,name);
                                 } else if (args[4].includes("rem")) {
                                     let name=args[4].replace("rem ","");
                                     removeTrait(monster,name);
@@ -562,35 +589,15 @@ var EncounterCreator = EncounterCreator || (function() {
                                         editBA(monster,ba,"desc",desc);
                                         baEditor(monster,ba);
                                     } else if (args[5].includes("toggleatk")) {
-                                        let atk=Boolean(args[5].replace("toggle atk ",""));
+                                        let mon=state.monster.find(m => m.name==monster);
+                                        let bonus_act=mon.bonus_actions.find(b => b.name==ba);
+                                        let atk=bonus_act.attack;
                                         if (atk==true) {
-                                            if (!args[6]) {
-                                                sendChat("Encounter Creator","/w gm You neeed to define a type (Melee or Ranged) for the attack!");
-                                            } else if (args[6].includes("type")) {
-                                                let atktype=args[6].replace("type ","");
-                                                if (atktype.toLowerCase()!=="melee" && atktype.toLowerCase()!=="ranged") {
-                                                    sendChat("Encounter Creator","/w gm Invalid attack type!");
-                                                } else if (atktype.toLowerCase()=="melee" || atktype.toLowerCase()=="ranged") {
-                                                    if (atktype.toLowerCase()=="melee") {
-                                                        atktype="Melee";
-                                                    } else if (atktype.toLowerCase()=="ranged") {
-                                                        atktype="Ranged";
-                                                    }
-                                                    if (!args[7]) {
-                                                        sendChat("Encounter Creator","/w gm You need to define the range of the Attack!");
-                                                    } else if (args[7].includes("range")) {
-                                                        let range=args[7].replace("range ","");
-                                                        if (!args[8]) {
-                                                            sendChat("Encounter Creator","/w gm You need to define the to hit bonus of the Attack!");
-                                                        } else if (args[8].includes("tohit")) {
-                                                            let tohit=Number(args[8].replace("tohit ",""));
-                                                            editBA(monster,ba,"atk",atk,atktype,range,tohit);
-                                                            baEditor(monster,ba);
-                                                        }
-                                                    }
-                                                }
-                                            }
+                                            atk=false;
+                                            editBA(monster,ba,"atk",atk);
+                                            baEditor(monster,ba);
                                         } else if (atk==false) {
+                                            atk=true;
                                             editBA(monster,ba,"atk",atk);
                                             baEditor(monster,ba);
                                         }
@@ -598,11 +605,31 @@ var EncounterCreator = EncounterCreator || (function() {
                                         let dice=args[5].replace("setdmg ","");
                                         if (!args[6]) {
                                             sendChat("Encounter Creator","/w gm You need to define a damage type!");
-                                        } else if (args[6].includes("type")) {
-                                            let dmgtype=args[6].replace("type ","");
-                                            editBA(monster,ba,"dmg",dice,dmgtype);
+                                        } else if (args[6].includes("dmgtype")) {
+                                            let dmgtype=args[6].replace("dmgtype ","");
+                                            if (!state.encbasics.dmgtype.includes(dmgtype)) {
+                                                sendChat("Encounter Creator","/w gm Invalid Damage Type!");
+                                            } else if (state.encbasics.dmgtype.includes(dmgtype)) {
+                                                editBA(monster,ba,"dmg",dice,dmgtype);
+                                                baEditor(monster,ba);
+                                            }
+                                        }
+                                    } else if (args[5].includes("settohit")) {
+                                        let tohit=Number(args[5].replace("settohit ",""));
+                                        editBA(monster,ba,"tohit",tohit);
+                                        baEditor(monster,ba);
+                                    } else if (args[5].includes("setatktype")) {
+                                        let atktype=args[5].replace("setatktype ","");
+                                        if (!state.encbasics.atktype.includes(atktype)) {
+                                            sendChat("Encounter Creator","/w gm Invalid Attack Type!");
+                                        } else if (state.encbasics.atktype.includes(atktype)) {
+                                            editBA(monster,ba,"atktype",atktype);
                                             baEditor(monster,ba);
                                         }
+                                    } else if (args[5].includes("setrange")) {
+                                        let range=args[5].replace("setrange ","")+" ft.";
+                                        editBA(monster,ba,"range",range);
+                                        baEditor(monster,ba);
                                     }
                                 } else if (args[4].includes("add")) {
                                     let ba=args[4].replace("add ","");
@@ -627,35 +654,15 @@ var EncounterCreator = EncounterCreator || (function() {
                                         editAct(monster,act,"desc",desc);
                                         actEditor(monster,act);
                                     } else if (args[5].includes("toggleatk")) {
-                                        let atk=Boolean(args[5].replace("toggle atk ",""));
+                                        let mon=state.monster.find(m => m.name==monster);
+                                        let action=mon.actions.find(a => a.name==act);
+                                        let atk=action.attack;
                                         if (atk==true) {
-                                            if (!args[6]) {
-                                                sendChat("Encounter Creator","/w gm You neeed to define a type (Melee or Ranged) for the attack!");
-                                            } else if (args[6].includes("type")) {
-                                                let atktype=args[6].replace("type ","");
-                                                if (atktype.toLowerCase()!=="melee" && atktype.toLowerCase()!=="ranged") {
-                                                    sendChat("Encounter Creator","/w gm Invalid attack type!");
-                                                } else if (atktype.toLowerCase()=="melee" || atktype.toLowerCase()=="ranged") {
-                                                    if (atktype.toLowerCase()=="melee") {
-                                                        atktype="Melee";
-                                                    } else if (atktype.toLowerCase()=="ranged") {
-                                                        atktype="Ranged";
-                                                    }
-                                                    if (!args[7]) {
-                                                        sendChat("Encounter Creator","/w gm You need to define the range of the Attack!");
-                                                    } else if (args[7].includes("range")) {
-                                                        let range=args[7].replace("range ","");
-                                                        if (!args[8]) {
-                                                            sendChat("Encounter Creator","/w gm You need to define the to hit bonus of the Attack!");
-                                                        } else if (args[8].includes("tohit")) {
-                                                            let tohit=Number(args[8].replace("tohit ",""));
-                                                            editAct(monster,act,"atk",atk,atktype,range,tohit);
-                                                            actEditor(monster,act);
-                                                        }
-                                                    }
-                                                }
-                                            }
+                                            atk=false;
+                                            editAct(monster,act,"atk",atk);
+                                            actEditor(monster,act);
                                         } else if (atk==false) {
+                                            atk=true;
                                             editAct(monster,act,"atk",atk);
                                             actEditor(monster,act);
                                         }
@@ -663,11 +670,31 @@ var EncounterCreator = EncounterCreator || (function() {
                                         let dice=args[5].replace("setdmg ","");
                                         if (!args[6]) {
                                             sendChat("Encounter Creator","/w gm You need to define a damage type!");
-                                        } else if (args[6].includes("type")) {
-                                            let dmgtype=args[6].replace("type ","");
-                                            editAct(monster,act,"dmg",dice,dmgtype);
+                                        } else if (args[6].includes("dmgtype")) {
+                                            let dmgtype=args[6].replace("dmgtype ","");
+                                            if (!state.encbasics.dmgtype.includes(dmgtype)) {
+                                                sendChat("Encounter Creator","/w gm Invalid Damage Type!");
+                                            } else if (state.encbasics.dmgtype.includes(dmgtype)) {
+                                                editAct(monster,act,"dmg",dice,dmgtype);
+                                                actEditor(monster,act);
+                                            }
+                                        }
+                                    } else if (args[5].includes("settohit")) {
+                                        let tohit=Number(args[5].replace("settohit ",""));
+                                        editAct(monster,act,"tohit",tohit);
+                                        actEditor(monster,act);
+                                    } else if (args[5].includes("setatktype")) {
+                                        let atktype=args[5].replace("setatktype ","");
+                                        if (!state.encbasics.atktype.includes(atktype)) {
+                                            sendChat("Encounter Creator","/w gm Invalid Attack Type");
+                                        } else if (state.encbasics.atktype.includes(atktype)) {
+                                            editAct(monster,act,"atktype",atktype);
                                             actEditor(monster,act);
                                         }
+                                    } else if (args[5].includes("setrange")) {
+                                        let range=args[5].replace("setrange ","")+" ft.";
+                                        editAct(monster,act,"range",range);
+                                        actEditor(monster,act);
                                     }
                                 } else if (args[4].includes("add")) {
                                     let act=args[4].replace("add ","");
@@ -694,13 +721,8 @@ var EncounterCreator = EncounterCreator || (function() {
                                     }
                                 } else if (args[4].includes("add")) {
                                     let reaction=args[4].replace("add ","");
-                                    if (!args[5]) {
-                                        sendChat("Encounter Creator","/w gm You need to define a description for the reaction!");
-                                    } else if (args[5].includes("desc")) {
-                                        let desc=args[5].repalce("desc ","");
-                                        createReact(monster,reaction,desc);
-                                        reactEditor(monster,reaction);
-                                    }
+                                    createReact(monster,reaction);
+                                    reactEditor(monster,reaction);
                                 } else if (args[4].includes("rem")) {
                                     let reaction=args[4].replace("rem ","");
                                     removeReact(monster,reaction);
@@ -720,35 +742,15 @@ var EncounterCreator = EncounterCreator || (function() {
                                         editLeg(monster,leg,"desc",desc);
                                         legEditor(monster,leg);
                                     } else if (args[5].includes("toggleatk")) {
-                                        let atk=Boolean(args[5].replace("toggle atk ",""));
+                                        let mon=state.monster.find(m => m.name==monster);
+                                        let leg_act=mon.legend_actions.find(l => l.name==leg);
+                                        let atk=leg_act.attack;
                                         if (atk==true) {
-                                            if (!args[6]) {
-                                                sendChat("Encounter Creator","/w gm You neeed to define a type (Melee or Ranged) for the attack!");
-                                            } else if (args[6].includes("type")) {
-                                                let atktype=args[6].replace("type ","");
-                                                if (atktype.toLowerCase()!=="melee" && atktype.toLowerCase()!=="ranged") {
-                                                    sendChat("Encounter Creator","/w gm Invalid attack type!");
-                                                } else if (atktype.toLowerCase()=="melee" || atktype.toLowerCase()=="ranged") {
-                                                    if (atktype.toLowerCase()=="melee") {
-                                                        atktype="Melee";
-                                                    } else if (atktype.toLowerCase()=="ranged") {
-                                                        atktype="Ranged";
-                                                    }
-                                                    if (!args[7]) {
-                                                        sendChat("Encounter Creator","/w gm You need to define the range of the Attack!");
-                                                    } else if (args[7].includes("range")) {
-                                                        let range=args[7].replace("range ","");
-                                                        if (!args[8]) {
-                                                            sendChat("Encounter Creator","/w gm You need to define the to hit bonus of the Attack!");
-                                                        } else if (args[8].includes("tohit")) {
-                                                            let tohit=Number(args[8].replace("tohit ",""));
-                                                            editLeg(monster,leg,"atk",atk,atktype,range,tohit);
-                                                            legEditor(monster,leg);
-                                                        }
-                                                    }
-                                                }
-                                            }
+                                            atk=false;
+                                            editLeg(monster,leg,"atk",atk);
+                                            legEditor(monster,leg);
                                         } else if (atk==false) {
+                                            atk=true;
                                             editLeg(monster,leg,"atk",atk);
                                             legEditor(monster,leg);
                                         }
@@ -756,11 +758,31 @@ var EncounterCreator = EncounterCreator || (function() {
                                         let dice=args[5].replace("setdmg ","");
                                         if (!args[6]) {
                                             sendChat("Encounter Creator","/w gm You need to define a damage type!");
-                                        } else if (args[6].includes("type")) {
-                                            let dmgtype=args[6].replace("type ","");
-                                            editLeg(monster,leg,"dmg",dice,dmgtype);
+                                        } else if (args[6].includes("dmgtype")) {
+                                            let dmgtype=args[6].replace("dmgtype ","");
+                                            if (!state.encbasics.dmgtype.includes(dmgtype)) {
+                                                sendChat("Encounter Creator","/w gm Invalid Damage Type!");
+                                            } else if (state.encbasics.dmgtype.includes(dmgtype)) {
+                                                editLeg(monster,leg,"dmg",dice,dmgtype);
+                                                legEditor(monster,leg);
+                                            }
+                                        }
+                                    } else if (args[5].includes("settohit")) {
+                                        let tohit=Number(args[5].replace("settohit ",""));
+                                        editLeg(monster,leg,"tohit",tohit);
+                                        legEditor(monster,leg);
+                                    } else if (args[5].includes("setatktype")) {
+                                        let atktype=args[5].replace("setatktype ","");
+                                        if (!state.encbasics.atktype.includes(atktype)) {
+                                            sendChat("Encounter Creator","/w gm Invalid Attack Type!");
+                                        } else if (state.encbasics.atktype.includes(atktype)) {
+                                            editLeg(monster,leg,"atktype",atktype);
                                             legEditor(monster,leg);
                                         }
+                                    } else if (args[5].includes("setrange")) {
+                                        let range=args[5].replace("setrange ","")+" ft.";
+                                        editLeg(monster,leg,"range",range);
+                                        legEditor(monster,leg);
                                     }
                                 } else if (args[4].includes("add")) {
                                     let leg=args[4].replace("add ","");
@@ -785,35 +807,15 @@ var EncounterCreator = EncounterCreator || (function() {
                                         editMyth(monster,myth,"desc",desc);
                                         mythEditor(monster,myth);
                                     } else if (args[5].includes("toggleatk")) {
-                                        let atk=Boolean(args[5].replace("toggle atk ",""));
+                                        let mon=state.monster.find(m => m.name==monster);
+                                        let myth_act=mon.mythic_actions.find(m => m.name==myth);
+                                        let atk=myth_act.attack;
                                         if (atk==true) {
-                                            if (!args[6]) {
-                                                sendChat("Encounter Creator","/w gm You neeed to define a type (Melee or Ranged) for the attack!");
-                                            } else if (args[6].includes("type")) {
-                                                let atktype=args[6].replace("type ","");
-                                                if (atktype.toLowerCase()!=="melee" && atktype.toLowerCase()!=="ranged") {
-                                                    sendChat("Encounter Creator","/w gm Invalid attack type!");
-                                                } else if (atktype.toLowerCase()=="melee" || atktype.toLowerCase()=="ranged") {
-                                                    if (atktype.toLowerCase()=="melee") {
-                                                        atktype="Melee";
-                                                    } else if (atktype.toLowerCase()=="ranged") {
-                                                        atktype="Ranged";
-                                                    }
-                                                    if (!args[7]) {
-                                                        sendChat("Encounter Creator","/w gm You need to define the range of the Attack!");
-                                                    } else if (args[7].includes("range")) {
-                                                        let range=args[7].replace("range ","");
-                                                        if (!args[8]) {
-                                                            sendChat("Encounter Creator","/w gm You need to define the to hit bonus of the Attack!");
-                                                        } else if (args[8].includes("tohit")) {
-                                                            let tohit=Number(args[8].replace("tohit ",""));
-                                                            editMyth(monster,myth,"atk",atk,atktype,range,tohit);
-                                                            mythEditor(monster,myth);
-                                                        }
-                                                    }
-                                                }
-                                            }
+                                            atk=false;
+                                            editMyth(monster,myth,"atk",atk);
+                                            mythEditor(monster,myth);
                                         } else if (atk==false) {
+                                            atk=true;
                                             editMyth(monster,myth,"atk",atk);
                                             mythEditor(monster,myth);
                                         }
@@ -821,11 +823,31 @@ var EncounterCreator = EncounterCreator || (function() {
                                         let dice=args[5].replace("setdmg ","");
                                         if (!args[6]) {
                                             sendChat("Encounter Creator","/w gm You need to define a damage type!");
-                                        } else if (args[6].includes("type")) {
-                                            let dmgtype=args[6].replace("type ","");
-                                            editMyth(monster,myth,"dmg",dice,dmgtype);
+                                        } else if (args[6].includes("dmgtype")) {
+                                            let dmgtype=args[6].replace("dmgtype ","");
+                                            if (!state.encbasics.dmgtype.includes(dmgtype)) {
+                                                sendChat("Encounter Creator","/w gm Invalid Damage Type!");
+                                            } else if (state.encbasics.dmgtype.includes(dmgtype)) {
+                                                editMyth(monster,myth,"dmg",dice,dmgtype);
+                                                mythEditor(monster,myth);
+                                            }
+                                        }
+                                    } else if (args[5].includes("settohit")) {
+                                        let tohit=Number(args[5].replace("settohit ",""));
+                                        editMyth(monster,myth,"tohit",tohit);
+                                        mythEditor(monster,myth);
+                                    } else if (args[5].includes("setatktype")) {
+                                        let atktype=args[5].replace("setatktype ","");
+                                        if (!state.encbasics.atktype.includes(atktype)) {
+                                            sendChat("Encounter Creator","/w gm Invalid Attack Type!");
+                                        } else if (state.encbasics.atktype.includes(atktype)) {
+                                            editMyth(monster,myth,"atktype",atktype);
                                             mythEditor(monster,myth);
                                         }
+                                    } else if (args[5].includes("setrange")) {
+                                        let range=args[5].replace("setrange ","")+" ft.";
+                                        editMyth(monster,myth,"range",range);
+                                        mythEditor(monster,myth);
                                     }
                                 } else if (args[4].includes("add")) {
                                     let myth=args[4].replace("add ","");
@@ -839,7 +861,15 @@ var EncounterCreator = EncounterCreator || (function() {
                             }
                         } else if (args[2]=="reset") {
                             resetMonster(monster);
+                            monsterMenu(monster);
+                        } else if (args[2]=="del") {
+                            deleteMon(monster);
+                            monsterMenu(undefined);
                         }
+                    } else if (args[1].includes("new")) {
+                        let monster=args[1].replace("new ","");
+                        createMon(monster);
+                        monsterMenu(monster);
                     }
                 return;
                 case '!party':
@@ -933,12 +963,106 @@ var EncounterCreator = EncounterCreator || (function() {
         }
     },
 
-    encounterMenu = function(enc) {
-
+    encounterMenu = function(enc,party) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+        enc=state.encounter.find(e => e.name==enc);
+        let encounters=[];
+        for (let i=0;i<state.encounter.length;i++) {
+            encounters.push(state.encounter[i].name);
+        }
+        let len=encounters.length;
+        for (let i=0;i<len;i++) {
+            encounters=String(encounters).replace(",","|");
+        }
+        let parties=[];
+        for (let i=0;i<enc.party.length;i++) {
+            parties.push(enc.party[i].name);
+        };
+        len=parties.length;
+        for (let i=0;i<len;i++) {
+            parties=String(parties).replace(",","|");
+        }
+        if (!enc) {
+            sendChat("Encounter Creator","/w gm Invalid Encounter!");
+        } else if (enc) {
+            party=enc.party.find(p => p.name==party);
+            let memberlist='';
+            let trborder='style="border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; border-bottom: 1px solid #cccccc;"';
+            let tdborder='style="border-left: 1px solid #cccccc; border-right: 1px solid #cccccc;"';
+            let tdborder2='style="border-rigth: 1px solid #cccccc;"';
+            for (let i=0;i<party.members.length;i++) {
+                memberlist+='<tr '+trborder+'><td '+tdborder+'>'+party.members[i].level+'</td><td '+tdborder2+'>'+party.members[i].class+'</td><td '+tdborder2+'>'+party.members[i].name+'</td></tr>';
+            }
+            let members=[];
+            for (let i=0;i<party.members.length;i++) {
+                members.push(party.members[i].name);
+            }
+            len=members.length;
+            for (let i=0;i<len;i++) {
+                members=String(members).replace(",","|");
+            }
+            sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                '<div ' + headstyle + '>Encounter Menu</div>' + //--
+                '<div ' + arrowstyle + '></div>' + //--
+                '<table ' + tablestyle + '>' + //--
+                '<tr><td>Encounter: </td><td><a ' + astyle1 + '" href="!enc --?{' + encounters + '}">' + enc.name + '</a></td></tr>' + //--
+                '<tr><td>Min CR: </td><td><a ' + astyle3 + '" href="!enc --' + enc.name + ' --edit --cr min ?{Min CR?|0}">' + enc.crmin + '</a></td></tr>' + //--
+                '<tr><td>Max CR: </td><td><a ' + astyle3 + '" href="!enc --' + enc.name + ' --edit --cr max ?{Max CR?|0}">' + enc.crmax + '</a></td></tr>' + //--
+                '</table>' + //--
+                '<br>' + //--
+                '<table ' + tablestyle + '>' + //--
+                '<tr><td>Party: </td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --party ?{Party?|' + parties + '}">' + party.name + '</a></td></tr>' + //--
+                '</table>' + //--
+                '<br>' + //--
+                '<table>' + //--
+                '<thead><tr ' + trstyle + '><th>Lvl.</th><th>Class</th><th>Name</th></tr></thead>' + //--
+                '<tbody>' + memberlist + '</tbody>' + //--
+                '</table>' + //--
+                '<table>' + //--
+                '<tr><td style="text-align:left;"><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --party ' + party.name + ' --add --name ?{Member?|' + members + '}">Add Member</a></td>' + //--
+                '<td style="text-align:right;"><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --party ' + party.name + '--rem --name ?{Member?|' + members + '}">Rem Member</a></td></tr>' + //--
+                '</table>' + //--
+                '<br><br>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --monsters">View Monsters</a></div>' + //--
+                '<br>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --loot">View Loot</a></div>' + //--
+                '<br><br>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --edit --name ?{Name?|Insert Name}">' + enc.name + '</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --submit">Finish Setup</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --reset">Reset Encounters</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --create ?{Name?|Insert Name}">Create Encounter</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --delete">Delete Encounter</a></div>' + //--
+                '</div>'
+            );
+        }
     },
 
     createEnc = function(enc) {
-
+        let test=state.encounter.find(e => e.name==enc);
+        if (test) {
+            sendChat("Encounter Creator","/w gm An Encounter with that Name exists already, aborting...");
+        } else if (!test) {
+            let newenc = [
+                {
+                    name: enc,
+                    mincr: 0,
+                    maxcr: 0,
+                    loot: [],
+                    monsters: [],
+                    party: []
+                }
+            ];
+            state.encounter.push(newenc[0]);
+            sendChat("Encounter Creator",`/w gm Created the Encounter \"${enc}\".`);
+        }
     },
 
     editEncounter = function(enc,option,val1,val2) {
@@ -953,11 +1077,144 @@ var EncounterCreator = EncounterCreator || (function() {
 
     },
 
-    resetEnc = function(enc) {
+    resetEnc = function() {
 
     },
 
+    viewMonsters = function(enc) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+        let trborder = 'style="border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; border-bottom: 1px solid #cccccc;"';
+        let tdborder = 'style="border-left: 1px solid #cccccc; border-right: 1px solid #cccccc;"';
+        let tdborder2 = 'style="border-rigth: 1px solid #cccccc;"';
+        enc=state.encounter.find(e => e.name==enc);
+        let monsters = enc.monsters;
+        let monsterList="";
+        let list=[];
+        let enclist=[];
+        let fullMonList=[];
+        for (let i=0;i<state.encounter.length;i++) {
+            enclist.push(state.encounter[i].name);
+        }
+        let len1=enclist.length;
+        for (let i=0;i<len1;i++) {
+            enclist=String(enclist).replace(",","|");
+        }
+        for (let i=0;i<state.monster.length;i++) {
+            fullMonList.push(state.monster[i].name);
+        }
+        let len2 = fullMonList.length;
+        for (let i=0;i<len2;i++) {
+            fullMonList=String(fullMonList).replace(",","|");
+        }
+        if (monsters.length && monsters.length>0) {
+            for (let i=0;i<monsters.length;i++) {
+                monsterList+='<tr '+trborder+'><td '+tdborder2+'>'+monsters[i].name+'</td><td '+tdborder2+'>'+monsters[i].type+'</td><td '+tdborder2+'>'+monsters[i].hp+'</td><td '+tdborder2+'>'+monsters[i].ac+'</td><td>'+monsters[i].cr+'</td></tr>';
+                list.push(monsters[i].name);
+            }
+            let len=list.length;
+            for (let i=0;i<len;i++) {
+                list=String(list).replace(',','|');
+            }
+            sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                '<div ' + headstyle + '>Monster List</div>' + //--
+                '<div ' + arrowstyle + '></div>' + //--
+                '<table ' + tablestyle + '>' + //--
+                '<tr><td style="text-align:left;">Encounter: </td><td style="text-align:center;"><a ' + astyle1 + '" href="!enc --?{Encounter?|' + enclist + '} --monsters">' + enc.name + '</a></td></tr>' + //--
+                '</table>' + //--
+                '<br><br>' + //--
+                '<table>' + //--
+                '<thead>' + //--
+                '<tr ' + trstyle + '><th ' + tdborder2 + '>Name</th><th ' + tdborder2 + '>Type</th><th ' + tdborder2 + '>HP</th><th ' + tdborder2 + '>AC</th><th>CR</th></tr>' + //--
+                '</thead>' + //--
+                '<tbody>' + //--
+                monsterList + //--
+                '</tbody>' + //--
+                '</table>' + //--
+                '<br><br>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --edit --monster --?{Monster?|' + list + '}">Edit Monster</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --monster --add ?{Monster?|' + fullMonList + '}">Add Monster</a>' + //--
+                '<a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --monster --rem ?{Monster?|' + list + '}">Rem. Monster</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + '">Go Back</a></div>' + //--
+                '</div>'
+            );
+        }
+    },
+
+    viewLoot = function(enc) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+        let trborder = 'style="border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; border-bottom: 1px solid #cccccc;"';
+        let tdborder = 'style="border-left: 1px solid #cccccc; border-right: 1px solid #cccccc;"';
+        let tdborder2 = 'style="border-rigth: 1px solid #cccccc;"';
+        enc=state.enc.find(e => e.name==enc);
+        let loot = enc.loot;
+        let lootList = "";
+        let items=[];
+        let enclist=[];
+        for (let i=0;i<state.enc.length;i++) {
+            enclist.push(state.enc[i].name);
+        }
+        let len1=enclist.length;
+        for (let i=0;i<len1;i++) {
+            enclist=String(enclist).replace(",","|");
+        }
+        if (loot.length && loot.length>0) {
+            for (let i=0;i<loot.length;i++) {
+                let desc=String(loot[i].desc).split(';');
+                lootList='<tr ' + trborder + '><td ' + tdborder2 + '>' + loot[i].name + '</td><td ' + tdborder2 + '>' + desc[0] + '</td><td>' + loot[i].price + '</td></tr>';
+                items.push(loot[i].name);
+            }
+            let len=items.length;
+            for (let i=0;i<len;i++) {
+                items=String(items).replace(",","|");
+            }
+            sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                '<div ' + headstyle + '>Loot Table</div>' + //--
+                '<div ' + arrowstyle + '></div>' + //--
+                '<table ' + tablestyle + '>' + //--
+                '<tr><td style="text-align:left;">Encounter: </td><td style="text-align:center;"><a ' + astyle1 + '" href="!enc --?{Encounter?|' + enclist + '} --loot">' + enc.name + '</a></td></tr>' + //--
+                '</table>' + //--
+                '<br><br>' + //--
+                '<table>' + //--
+                '<thead>' + //--
+                '<tr ' + trstyle + '><th ' + tdborder2 + '>Name</th><th ' + tdborder2 + '>Description</th><th>Price (GP)</th></tr>' + //--
+                '</thead>' + //--
+                '<tbody>' + //--
+                lootList + //--
+                '</tbody>' + //--
+                '</table>' + //--
+                '<br><br>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --edit --loot --?{Item?|' + items + '}">Edit Item</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --genloot ?{Amount?|1} --minrare ?{Minimum Rarity?|Common|Uncommon|Rare|Very Rare|Legendary} --maxrare ?{Maximum Rarity?|Common|Uncommon|Rare|Very Rare|Legendary} --overwrite ?{Overwrite Table?|true|false}">Generate Loot</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + '">Go Back</a></div>' + //--
+                '</div>'
+            );
+        }
+    },
+
     monsterMenu = function(mon) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
 
     },
 
@@ -965,8 +1222,153 @@ var EncounterCreator = EncounterCreator || (function() {
 
     },
 
-    traitEditor = function(mon,trait) {
+    createMon = function(mon) {
+        let test=state.monster.find(m => m.name==mon);
+        if (test) {
+            sendChat("Encounter Creator","/w gm A Monster with that Name exists already, please choose a different Name!");
+        } else if (!test) {
+            let monster=[
+                {
+                    //Basics
+                    name: mon,
+                    type: "",
+                    ac: 10,
+                    actype: "",
+                    hp: 0,
+                    speed: "",
+                    amount: 1,
+                    save: [],
+                    skill: [],
+                    vuln: "",
+                    res: "",
+                    dmgimm: "",
+                    condimm: "",
+                    cr: 0,
+                    pb: 0,
+                    caster: false,
+                    caster_lvl: 0,
+                    spell_atk_mod: 0,
+                    spell_dc_mod: 0,
+                    cast_ability: "",
+                    bonusact: false,
+                    react: false,
+                    legendary: 0,
+                    mythic: false,
+                    mythic_desc: "",
+                    traits: [],
+                    actions: [],
+                    bonus_actions: [],
+                    reactions: [],
+                    legendary_actions: [],
+                    mythic_actions: []
+                }
+            ];
+            state.monster.push(monster[0]);
+            sendChat("Encounter Creator",`/w gm Created new Monster with the Name \"${mon}\".`);
+        }
+    },
 
+    deleteMon = function(mon) {
+        for (let i=0;i<state.monster.length;i++) {
+            if (state.monster[i].name==mon) {
+                state.monster.splice(i);
+                sendChat("Encounter Creator",`/w gm Deleted the Monster \"${mon}\".`);
+            }
+        }
+    },
+
+    traitEditor = function(mon,trait) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+        var trstyle2 = 'style="border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align:left;"';
+        var tdstyle = 'style="border-right: 1px solid #cccccc;"';
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that name!");
+        } else if (mon) {
+            let traitlist=[];
+            let traits="";
+            if (!mon.traits.length || mon.traits.length<1) {
+                sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                    '<div ' + headstyle + '>Trait Editor</div>' + //--
+                    '<div ' + arrowstyle + '></div>' + //--
+                    '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --traits">' + mon.name + '</a></div>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><b>Traits</b></div>' + //--
+                    '<div style="text-align:center;">No Traits, yet</div>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --traits --add ?{Name?|Insert Name}">Add Trait</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                    '</div>'
+                );
+            } else if (mon.traits.length>=1) {
+                for (let i=0;i<mon.traits.length;i++) {
+                    traits+='<tr ' + trstyle2 + '><td ' + tdstyle + '>' + Number(i+1) + '</td><td>' + mon.traits[i].name + '</td></tr>';
+                    traitlist[i]=mon.traits[i].name;
+                }
+                let len = traitlist.length;
+                for (let i=0;i<len;i++) {
+                    traitlist=String(traitlist).replace(",","|");
+                }
+                let monlist=[];
+                for (let i=0;i<state.monster.length;i++) {
+                    monlist[i]=state.monster[i].name;
+                }
+                let len1 = monlist.length;
+                for (let i=0;i<len1;i++) {
+                    monlist=String(monlist).replace(",","|");
+                }
+                if (trait) {
+                    trait=mon.traits.find(t => t.name==trait);
+                    sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                        '<div ' + headstyle + '>Trait Editor</div>' + //--
+                        '<div ' + arrowstyle + '></div>' + //--
+                        '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --traits">' + mon.name + '</a></td></tr>' + //--
+                        '<br><br>' + //--
+                        '<table ' + tablestyle + '>' + //--
+                        '<tr><td>Trait: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --traits --?{Trait?|' + traitlist + '}">' + trait.name + '</a></td></tr>' + //--
+                        '<tr><td>Description: </td><td>' + trait.desc + '</td></tr>' + //--
+                        '</table>' + //--
+                        '<br><br>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --traits --' + trait.name + ' --setname ?{Name?|Insert Name}">Set Name</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --traits --' + trait.name + ' --setdesc ?{Description?|Insert Description}">Set Description</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --traits --add ?{Name?|Insert Name}">Add Trait</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --traits --rem ?{Trait?|' + traitlist + '}">Remove Trait</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                        '</div>'
+                    );
+                } else if (!trait) {
+                    sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                        '<div ' + headstyle + '>Trait Editor</div>' + //--
+                        '<div ' + arrowstyle + '></div>' + //--
+                        '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --traits">' + mon.name + '</a></div>' + //--
+                        '<br><br>' + //--
+                        '<div style="text-align:center;"><b>Traits</b></div>' + //--
+                        '<table ' + tablestyle + '>' + //--
+                        '<thead>' + //--
+                        '<tr ' + trstyle + '><th ' + tdstyle + '>Pos.</th><th>Name</th></tr>' + //--
+                        '</thead>' + //--
+                        '<tbody>' + //--
+                        traits + //--
+                        '</tbody>' + //--
+                        '</table>' + //--
+                        '<br><br>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --traits --?{Trait?|' + traitlist + '}">View Trait</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --traits --add ?{Name?|Insert Name}">Add Trait</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --traits --rem ?{Trait?|' + traitlist + '}"Remove Trait</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                        '</div>'
+                    );
+                }
+            }
+        }
     },
 
     editTrait = function(mon,trait,option,val) {
@@ -974,15 +1376,245 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     baEditor = function(mon,ba) {
-
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+        var trstyle2 = 'style="border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align:left;"';
+        var tdstyle = 'style="border-right: 1px solid #cccccc;"';
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that name!");
+        } else if (mon) {
+            let balist=[];
+            let bas="";
+            if (!mon.bonus_actions.length || mon.bonus_actions.length<1) {
+                sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                    '<div ' + headstyle + '>Bonus Action Editor</div>' + //--
+                    '<div ' + arrowstyle + '></div>' + //--
+                    '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --bonusactions">' + mon.name + '</a></div>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><b>Bonus Actions</b></div>' + //--
+                    '<div style="text-align:center;">No Bonus Actions, yet</div>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --bonusactions --add ?{Name?|Insert Name}">Add Bonus Action</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                    '</div>'
+                );
+            } else if (mon.bonus_actions.length>=1) {
+                for (let i=0;i<mon.bonus_actions.length;i++) {
+                    bas+='<tr ' + trstyle2 + '><td ' + tdstyle + '>' + Number(i+1) + '</td><td>' + mon.bonus_actions[i].name + '</td></tr>';
+                    balist.push(mon.bonus_actions[i].name); 
+                }
+                let len = balist.length;
+                for (let i=0;i<len;i++) {
+                    balist=String(balist).replace(",","|");
+                }
+                let monlist=[];
+                for (let i=0;i<state.monster.length;i++) {
+                    monlist.push(state.monster[i].name);
+                }
+                let len1 = monlist.length;
+                for (let i=0;i<len1;i++) {
+                    monlist=String(monlist).replace(",","|");
+                }
+                ba=mon.bonus_actions.find(b => b.name==ba);
+                if (ba) {
+                    if (ba.attack==true) {
+                        sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                            '<div ' + headstyle + '>Bonus Action Editor</div>' + //--
+                            '<div ' + arrowstyle + '></div>' + //--
+                            '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --bonusactions">' + mon.name + '</a></div>' + //--
+                            '<br><br>' + //--
+                            '<table ' + tablestyle + '>' + //--
+                            '<tr><td>Bonus Action: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --bonusactions --?{Bonus Action?|' + balist + '}">' + ba.name + '</a></td></tr>' + //--
+                            '<tr><td>Has Attack: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --bonusactions --' + ba.name + ' --toggleatk">' + ba.attack + '</a></td></tr>' + //--
+                            '<tr><td>Attack Type: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --bonusactions --' + ba.name + ' --setatktype ?{Attack Type?' + state.encbasics.atktype + '}">' + ba.atktype + '</a></td></tr>' + //--
+                            '<tr><td>Range: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --bonusactions --' + ba.name + ' --setrange ?{Range?|5}">' + ba.range + '</a></td></tr>' + //--
+                            '<tr><td>To Hit: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --bonusactions --' + ba.name + ' --settohit ?{To Hit?|5}">' + ba.tohit + '</a></td></tr>' + //--
+                            '<tr><td>Damage: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --bonusactions --' + ba.name + ' --setdmg ?{Damage Dice?|' + ba.dmg + '} --dmgtype ?{Damage Type?|' + state.encbasics.dmgtype + '}">' + ba.dmg + ' ' + ba.dmgtype + '</a></td></tr>' + //--
+                            '<tr><td>Description: </td><td>' + ba.desc + '</td></tr>' + //--
+                            '</table>' + //--
+                            '<br><br>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --bonusactions --' + ba.name + ' --setname ?{Name?|Insert Name}">Set Name</a></div>' + //--
+                            '<div style="text-align:cener;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --bonusactions --' + ba.name + ' --setdesc ?{Description?|Insert Desc}">Set Description</a></div>' + //-- 
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --bonusactions --add ?{Name?|Insert Name}">Add Bonus Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --bonusactions --rem ?{Bonus Action?|' + balist + '}">Remove Bonus Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                            '</div>'
+                        );
+                    } else if (ba.attack==false) {
+                        sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                            '<div ' + headstyle + '>Bonus Action Editor</div>' + //--
+                            '<div ' + arrowstyle + '></div>' + //--
+                            '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --bonusactions">' + mon.name + '</a></div>' + //--
+                            '<br><br>' + //--
+                            '<table ' + tablestyle + '>' + //--
+                            '<tr><td>Bonus Action: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --bonusactions --?{Bonus Action?|' + balist + '}">' + ba.name + '</a></td></tr>' + //--
+                            '<tr><td>Has Attack: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --bonusactions --' + ba.name + ' --toggleatk">' + ba.attack + '</a></td></tr>' + //--
+                            '<tr><td>Descriptions: </td><td>' + ba.desc + '</td></tr>' + //--
+                            '</table>' + //--
+                            '<br><br>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --bonusactions --' + ba.name + ' --setname ?{Name?|Insert Name}">Set Name</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --bonusactions --' + ba.name + ' --setdesc ?{Description?|Insert Desc}">Set Description</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --bonusactions --add ?{Name?|Insert Name}">Add Bonus Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --bonusactions --rem ?{Bonus Action?|' + balist + '}">Remove Bonus Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                            '</div>'
+                        );
+                    }
+                } else if (!ba) {
+                    sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                        '<div ' + headstyle + '>Bonus Action Editor</div>' + //--
+                        '<div ' + arrowstyle + '></div>' + //--
+                        '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --bonusactions">' + mon.name + '</a></div>' + //--
+                        '<br><br>' + //--
+                        '<div style="text-align:center;"><b>Bonus Actions</b></div>' + //--
+                        '<table ' + tablestyle + '>' + //--
+                        '<thead>' + //--
+                        '<tr ' + trstyle + '><th ' + tdstyle + '>Pos.</th><th>Name</th></tr>' + //--
+                        '</thead>' + //--
+                        '<tbody>' + //--
+                        bas + //--
+                        '</tbody>' + //--
+                        '<br><br>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --bonusactions --?{Bonus Action?|' + balist + '}">View Bonus Action</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --bonusactions --add ?{Name?|Insert Name}">Add Bonus Action</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --bonusactions --rem ?{Bonus Action?|' + balist + '}">Remove Bonus Action</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                        '</div>'
+                    );
+                }
+            }
+        }
     },
 
     editBA = function(mon,ba,option,val1,val2,val3) {
-
+        
     },
 
     actEditor = function(mon,act) {
-
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+        var trstyle2 = 'style="border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align:left;"';
+        var tdstyle = 'style="border-right: 1px solid #cccccc;"';
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that name!");
+        } else if (mon) {
+            let actlist=[];
+            let acts="";
+            if (!mon.actions.length || mon.actions.length<1) {
+                sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                    '<div ' + headstyle + '>Action Editor</div>' + //--
+                    '<div ' + arrowstyle + '></div>' + //--
+                    '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --actions">' + mon.name + '</a></div>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><b>Actions</b></div>' + //--
+                    '<div style="text-align:center;">No Actions, yet</div>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --add ?{Name?|Insert Name}">Add Action</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                    '</div>'
+                );
+            } else if (mon.actions.length>=1) {
+                for (let i=0;i<mon.actions.length;i++) {
+                    acts+='<tr ' + trstyle2 + '><td ' + tdstyle + '>' + Number(i+1) + '</td><td>' + mon.actions[i].name + '</td></tr>';
+                    actlist.push(mon.actions[i].name);
+                }
+                let len = actlist.length;
+                for (let i=0;i<len;i++) {
+                    actlist=String(actlist).replace(",","|");
+                }
+                let monlist=[];
+                for (let i=0;i<state.monster.length;i++) {
+                    monlist.push(state.monster[i].name);
+                }
+                let len1 = monlist.length;
+                for (let i=0;i<len1;i++) {
+                    monlist=String(monlist).replace(",","|");
+                }
+                act=mon.actions.find(a => a.name==act);
+                if (act) {
+                    if (act.attack==true) {
+                        sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                            '<div ' + headstyle + '>Action Editor</div>' + //--
+                            '<div ' + arrowstyle + '></div>' + //--
+                            '<div style="text-align:center;">Monster: <a ' + astyle2 + '" href="!monster --?{Monster?|' + monlist + '} --edit --actions">' + mon.name + '</a></div>' + //--
+                            '<br><br>' + //--
+                            '<table ' + tablestyle + '>' + //--
+                            '<tr><td>Action: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --actions --?{Action?|' + actlist + '}">' + act.name + '</a></td></tr>' + //--
+                            '<tr><td>Has Attack: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --actions --' + act.name + ' --toggleatk">' + act.attack + '</a></td></tr>' + //--
+                            '<tr><td>Attack Type: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --actions --' + act.name + ' --setatktype ?{Attack Type?|' + state.encbasics.atktype + '}">' + act.atktype + '</a></td></tr>' + //--
+                            '<tr><td>Range: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --actions --' + act.name + ' --setrange ?{Range?|5}">' + act.range + '</a></td></tr>' + //--
+                            '<tr><td>To Hit: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --actions --' + act.name + ' --settohit ?{To Hit?|5}">+' + act.tohit + '</a></td></tr>' + //--
+                            '<tr><td>Damage: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --actions --' + act.name + ' --setdmg ?{Damage Dice?|' + act.dmg + '} --dmgtype ?{Damage Type?|' + state.encbasics.dmgtype + '}">' + act.dmg + ' ' + act.dmgtype + '</a></td></tr>' + //--
+                            '<tr><td>Description: </td><td>' + act.desc + '</td></tr>' + //--
+                            '</table>' + //--
+                            '<br><br>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --' + act.name + '--setname ?{Name?|Insert Name}">Set Name</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --' + act.name + '--setdesc ?{Description?|Insert Desc}">Set Description</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --add ?{Name?|Insert Name}">Add Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --rem ?{Action?|' + actlist + '}">Remove Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                            '</div>'
+                        );
+                    } else if (act.attack==false) {
+                        sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                            '<div ' + headstyle + '>Action Editor</div>' + //--
+                            '<div ' + arrowstyle + '></div>' + //--
+                            '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --actions">' + mon.name + '</a></div>' + //--
+                            '<br><br>' + //--
+                            '<table ' + tablestyle + '>' + //--
+                            '<tr><td>Action: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --actions --?{Action?|' + actlist + '}">' + act.name + '</a></td></tr>' + //--
+                            '<tr><td>Has Attack: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --actions --' + act.name + ' --toggleatk">' + act.attack + '</a></td></tr>' + //--
+                            '<tr><td>Description: </td><td>' + act.desc + '</td></tr>' + //--
+                            '</table>' + //--
+                            '<br><br>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --' + act.name + '--setname ?{Name?|Insert Name}">Set Name</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --' + act.name + '--setdesc ?{Description?|Insert Desc}">Set Description</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --add ?{Name?|Insert Name}">Add Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --rem ?{Action?|' + actlist + '}">Remove Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                            '</div>'
+                        );
+                    }
+                } else if (!act) {
+                    sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                        '<div ' + headstyle + '>Action Editor</div>' + //--
+                        '<div ' + arrowstyle + '></div>' + //--
+                        '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --actions">' + mon.name + '</a></div>' + //--
+                        '<br><br>' + //--
+                        '<div style="text-align:center;"><b>Actions</b></div>' + //--
+                        '<table ' + tablestyle + '>' + //--
+                        '<thead>' + //--
+                        '<tr ' + trstyle + '><th ' + tdstyle + '>Pos.</th><th>Name</th></tr>' + //--
+                        '</thead>' + //--
+                        '<tbody>' + //--
+                        acts + //--
+                        '</tbody>' + //--
+                        '<br><br>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --?{Action?|' + actlist + '}">View Action</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --add ?{Name?|Insert Name}">Add Action</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions --rem ?{Action?|' + actlist + '}">Remove Action</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                        '</div>'
+                    );
+                }
+            }
+        }
     },
 
     editAct = function(mon,act,option,val1,val2,val3) {
@@ -990,7 +1622,95 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     reactEditor = function(mon,react) {
-
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+        var trstyle2 = 'style="border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align:left;"';
+        var tdstyle = 'style="border-right: 1px solid #cccccc;"';
+        mon=state.monster.find(m => m.name==mon);
+        let monlist=[];
+        for (let i=0;i<state.monster.length;i++) {
+            monlist.push(state.monster[i].name);
+        }
+        for (let i=0;i<state.monster.length;i++) {
+            monlist=String(monlist).replace(",","|");
+        }
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that name!");
+        } else if (mon) {
+            react=mon.reactions.find(r => r.name==react);
+            let reactlist = [];
+            let reacts = "";
+            if (!mon.reactions.length || mon.reactions.length<1) {
+                sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                    '<div ' + headstyle + '>Reaction Editor</div>' + //--
+                    '<div ' + arrowstyle + '></div>' + //--
+                    '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --reactions">' + mon.name + '</a></div>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><b>Reactions</b></div>' + //--
+                    '<div style="text-align:center;">No Reactions, yet</div>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --reactions --add ?{Name?|Insert Name}">Add Reaction</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                    '</div>'
+                );
+            } else if (mon.reactions.length>=1) {
+                for (let i=0;i<mon.reactions.length;i++) {
+                    reacts += '<tr ' + trstyle2 + '><td ' + tdstyle + '>' + Number(i+1) + '</td><td>' + mon.reactions[i].name + '</td></tr>';
+                    reactlist.push(mon.reactions[i].name);
+                }
+                let len = reactlist.length;
+                for (let i=0;i<len;i++) {
+                    reactlist=String(reactlist).replace(",","|");
+                }
+                if (!react) {
+                    sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                        '<div ' + headstyle + '>Reaction Editor</div>' + //--
+                        '<div ' + arrowstyle + '></div>' + //--
+                        '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --reactions">' + mon.name + '</a></div>' + //--
+                        '<br><br>' + //--
+                        '<div style="text-align:center;"><b>Reactions</b></div>' + //--
+                        '<table ' + tablestyle + '>' + //--
+                        '<thead>' + //--
+                        '<tr ' + trstyle + '><th ' + tdstyle + '>Pos.</th><th>Name</th></tr>' + //--
+                        '</thead>' + //--
+                        '<tbody>' + //--
+                        reacts + //--
+                        '</tbody>' + //--
+                        '<br><br>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --reactions --?{Reaction?|' + reactlist + '}">View Reaction</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --reactions --add ?{Name?|Insert Name}">Add Reaction</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --reactions --rem ?{Reaction?|' + reactlist + '}">Remove Reaction</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                        '</div>'
+                    );
+                } else if (react) {
+                    sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                        '<div ' + headstyle + '>Reaction Editor</div>' + //--
+                        '<div ' + arrowstyle + '></div>' + //--
+                        '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --reactions">' + mon.name + '</a></div>' + //--
+                        '<br><br>' + //--
+                        '<table ' + tablestyle + '>' + //--
+                        '<tr><td>Reaction: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --reactions --?{Reaction?|' + reactlist + '}">' + react.name + '</a></td></tr>' + //--
+                        '<tr><td>Description: </td><td>' + react.description + '</td></tr>' + //--
+                        '</table>' + //--
+                        '<br><br>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --reactions --' + react.name + ' --setname ?{Name?|Insert Name}">Set Name</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --reactions --' + react.name + ' --setdesc ?{Description?|Insert Desc}">Set Description</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --reactions --add ?{Name?|Insert Name}">Add Reaction</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --reactions --rem ?{Reaction?|' + reactlist + '}">Remove Reaction</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                        '</div>'
+                    );
+                }
+            }
+        }
     },
 
     editReact = function(mon,react,option,val) {
@@ -998,7 +1718,120 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     legEditor = function(mon,leg) {
-
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+        var trstyle2 = 'style="border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align:left;"';
+        var tdstyle = 'style="border-right: 1px solid #cccccc;"';
+        mon=state.monster.find(m => m.name==mon);
+        let monlist=[];
+        for (let i=0;i<state.monster.length;i++) {
+            monlist.push(state.monster[i].name);
+        }
+        for (let i=0;i<state.monster.length;i++) {
+            monlist=String(monlist).replace(",","|");
+        }
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that name!");
+        } else if (mon) {
+            leg=mon.legendary_actions.find(l => l.name==leg);
+            let leglist=[];
+            let legacts="";
+            if (!mon.legendary_actions.length || mon.legendary_actions.length<1) {
+                sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                    '<div ' + headstyle + '>Legendary Action Editor</div>' + //--
+                    '<div ' + arrowstyle + '></div>' + //--
+                    '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --legend_actions">' + mon.name + '</a></div>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><b>Legendary Actions</b></div>' + //--
+                    '<div style="text-align:center;">No Legendary Actions, yet</div>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --legend_actions --add ?{Name?|Insert Name}">Add Legendary Action</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                    '</div>'
+                );
+            } else if (mon.legendary_actions.length>=1) {
+                for (let i=0;i<mon.legendary_actions.length;i++) {
+                    leglist.push(mon.legendary_actions[i].name);
+                    legacts+='<tr ' + trstyle2 + '><td ' + tdstyle + '>' + Number(i+1) + '</td><td>' + mon.legendary_actions[i].name + '</td></tr>';
+                }
+                for (let i=0;i<mon.lengendary_actions.length;i++) {
+                    leglist=String(leglist).replace(",","|");
+                }
+                if (!leg) {
+                    sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                        '<div ' + headstyle + '>Legendary Action Editor</div>' + //--
+                        '<div ' + arrowstyle + '></div>' + //--
+                        '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --legend_actions">' + mon.name + '</a></div>' + //--
+                        '<br><br>' + //--
+                        '<div style="text-align:center;"><b>Legendary Actions</b></div>' + //--
+                        '<table ' + tablestyle + '>' + //--
+                        '<thead>' + //--
+                        '<tr ' + trstyle + '><th ' + tdstyle + '>Pos.</th><th>Name</th></tr>' + //--
+                        '</thead>' + //--
+                        '<tbody>' + //--
+                        legacts + //--
+                        '</tbody>' + //--
+                        '<br><br>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --legend_actions --?{Legendary Action?|' + leglist + '}">View Legendary Action</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --legend_actions --add ?{Name?|Insert Name}">Add Legendary Action</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --legend_actions --rem ?{Legendary Action?|' + leglist + '}">Remove Legendary Action</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                        '</div>'
+                    );
+                } else if (leg) {
+                    if (leg.attack==true) {
+                        sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                            '<div ' + headstyle + '>Legendary Action Editor</a></div>' + //--
+                            '<div ' + arrowstyle + '></div>' + //--
+                            '<div style="text-align:center;">Monster: <a ' + astyle2 + '" href="!monster --?{Monster?|' + monlist + '} --edit --legend_actions">' + mon.name + '</a></div>' + //--
+                            '<br><br>' + //--
+                            '<table ' + tablestyle + '>' + //--
+                            '<tr><td>Legendary Action: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --legend_actions --?{Legendary Action?|' + leglist + '}">' + leg.name + '</a></td></tr>' + //--
+                            '<tr><td>Has Attack: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --legend_actions --' + leg.name + ' --toggleatk">' + leg.attack + '</a></td></tr>' + //--
+                            '<tr><td>Attack Type: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --legend_actions --' + leg.name + ' --setatktype ?{Attack Type?|' + state.encbasics.atktype + '}">' + leg.atktype + '</a></td></tr>' + //--
+                            '<tr><td>Range: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --legend_actions --' + leg.name + ' --setrange ?{Range?|5}">' + leg.range + '</a></td></tr>' + //--
+                            '<tr><td>To Hit: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --legend_actions --' + leg.name + ' --settohit ?{To Hit?|5}">+' + leg.tohit + '</a></td></tr>' + //--
+                            '<tr><td>Damage: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --legend_actions --' + leg.name + ' --setdmg ?{Damage Dice?|' + leg.dmg + '} --dmgtype ?{Damage Type?|' + state.encbasics.dmgtype + '}">' + leg.dmg + ' ' + leg.dmgtype + '</a></td></tr>' + //--
+                            '<tr><td>Description: </td><td>' + leg.desc + '</td></tr>' + //--
+                            '</table>' + //--
+                            '<br><br>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --legend_actions --' + leg.name + ' --setname ?{Name?|Insert Name}">Set Name</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --legend_actions --' + leg.name + ' --setdesc ?{Description?|Insert Desc}">Set Description</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --legend_actions --add ?{Name?|Insert Name}">Add Legendary Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --legend_actions --rem ?{Legendary Action?|' + leglist + '}">Remove Legendary Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                            '</div>'
+                        );
+                    } else if (leg.attack==false) {
+                        sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                            '<div ' + headstyle + '>Legendary Action Editor</div>' + //--
+                            '<div ' + arrowstyle + '></div>' + //--
+                            '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --legend_actions">' + mon.name + '</a></div>' + //--
+                            '<br><br>' + //--
+                            '<table ' + tablestyle + '>' + //--
+                            '<tr><td>Legendary Action: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --legend_actions --?{Legendary Action?|' + leglist + '}">' + leg.name + '</a></td></tr>' + //--
+                            '<tr><td>Has Attack: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --legend_actions --' + leg.name + ' --toggleatk">' + leg.attack + '</a></td></tr>' + //--
+                            '<tr><td>Description: </td><td>' + leg.desc + '</td></tr>' + //--
+                            '</table>' + //--
+                            '<br><br>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --legend_actions --' + leg.name + ' --setname ?{Name?|Insert Name}">Set Name</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --legend_actions --' + leg.name + ' --setdesc ?{Description?|Insert Desc}">Set Description</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --legend_actions --add ?{Name?|Insert Name}">Add Legendary Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --legend_actions --rem ?{Legendary Action?|' + leglist + '}">Remove Legendary Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                            '</div>'
+                        );
+                    }
+                }
+            }
+        }
     },
 
     editLeg = function(mon,leg,option,val1,val2,val3) {
@@ -1006,18 +1839,474 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     mythEditor = function(mon,myth) {
-
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+        var trstyle2 = 'style="border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align:left;"';
+        var tdstyle = 'style="border-right: 1px solid #cccccc;"';
+        mon=state.monster.find(m => m.name==mon);
+        let monlist=[];
+        for (let i=0;i<state.monster.length;i++) {
+            monlist.push(state.monster[i].name);
+        }
+        for (let i=0;i<state.monster.length;i++) {
+            monlist=String(monlist).replace(",","|");
+        }
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that name!");
+        } else if (mon) {
+            myth=mon.mythic_actions.find(m => m.name==myth);
+            let mythlist=[];
+            let mythact="";
+            if (!mon.mythic_actions.length || mon.mythic_actions.length<1) {
+                sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                    '<div ' + headstyle + '>Mythic Action Editor</div>' + //--
+                    '<div ' + arrowstyle + '></div>' + //--
+                    '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --mythic_actions">' + mon.name + '</a></div>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><b>Mythic Actions</b></div>' + //--
+                    '<div style="text-align:center;">No Mythic Actions, yet</div>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --add ?{Name?|Insert Name}">Add Mythic Action</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                    '</div>'
+                );
+            } else if (mon.mythic_actions.length>=1) {
+                for (let i=0;i<mon.mythic_actions.length;i++) {
+                    mythlist.push(mon.mythic_actions[i].name);
+                    mythact+='<tr ' + trstyle2 + '><td ' + tdstyle + '>' + Number(i+1) + '</td><td>' + mon.mythic_actions[0].name + '</td></tr>';
+                }
+                if (!myth) {
+                    sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                        '<div ' + headstyle + '>Mythic Action Editor</div>' + //--
+                        '<div ' + arrowstyle + '></div>' + //--
+                        '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --mythic_actions">' + mon.name + '</a></div>' + //--
+                        '<br><br>' + //--
+                        '<div style="text-align:center;"><b>Mythic Actions</b></div>' + //--
+                        '<table ' + tablestyle + '>' + //--
+                        '<thead>' + //--
+                        '<tr ' + trstyle + '><th ' + tdstyle + '>Pos.</th><th>Name</th></tr>' + //--
+                        '</thead>' + //--
+                        '<tbody>' + //--
+                        mythact + //--
+                        '</tbody>' + //--
+                        '</table>' + //--
+                        '<br><br>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --?{Mythic Action?|' + mythlist + '}">View Mythic Action</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --add ?{Name?|Insert Name}">Add Mythic Action</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --rem ?{Mythic Action?|' + mythlist + '}">Remove Mythic Action</a></div>' + //--
+                        '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                        '</div>'
+                    );
+                } else if (myth) {
+                    if (myth.attack==true) {
+                        sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                            '<div ' + headstyle + '>Mythic Action Editor</div>' + //--
+                            '<div ' + arrowstyle + '></div>' + //--
+                            '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --mythic_actions">' + mon.name + '</a></div>' + //--
+                            '<br><br>' + //--
+                            '<table ' + tablestyle + '>' + //--
+                            '<tr><td>Mythic Action: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --?{Mythic Action?|' + mythlist + '}">' + myth.name + '</a></td></tr>' + //--
+                            '<tr><td>Has Attack: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --' + myth.name + ' --toggleatk">' + myth.attack + '</a></td></tr>' + //--
+                            '<tr><td>Attack Type: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --' + myth.name + ' --setatktype ?{Attack Type?|' + state.encbasics.atktype + '}">' + myth.atktype + '</a></td></tr>' + //--
+                            '<tr><td>Range: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --' + myth.name + ' --setrange ?{Range?|5}">' + myth.range + '</a></td></tr>' + //--
+                            '<tr><td>To Hit: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --' + myth.name + ' --settohit ?{To Hit?|5}">+' + myth.tohit + '</a></td></tr>' + //--
+                            '<tr><td>Damage: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --' + myth.name + ' --setdmg ?{Damage Dice?|' + myth.dmg + '} --dmgtype ?{Damage Type?|' + state.encbasics.dmgtype + '}">' + myth.dmg + ' ' + myth.dmgtype + '</a></td></tr>' + //--
+                            '<tr><td>Description: </td><td>' + myth.desc + '</td></tr>' + //--
+                            '</table>' + //--
+                            '<br><br>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --' + myth.name + ' --setname ?{Name?|Insert Name}">Set Name</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --' + myth.name + ' --setdesc ?{Description?|Insert Desc}">Set Description</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --add ?{Name?|Insert Name}">Add Mythic Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --rem ?{Mythic Action?|' + mythlist + '}">Remove Mythic Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                            '</div>'
+                        );
+                    } else if (myth.attack==false) {
+                        sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                            '<div ' + headstyle + '>Mythic Action Editor</div>' + //--
+                            '<div ' + arrowstyle + '></div>' + //--
+                            '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '} --edit --mythic_actions">' + mon.name + '</a></div>' + //--
+                            '<br><br>' + //--
+                            '<table ' + tablestyle + '>' + //--
+                            '<tr><td>Mythic Action: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --?{Mythic Action?|' + mythlist + '}">' + myth.name + '</a></td></tr>' + //--
+                            '<tr><td>Has Attack: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --' + myth.name + ' --toggleatk">' + myth.attack + '</a></td></tr>' + //--
+                            '<tr><td>Description: </td><td>' + myth.desc + '</td></tr>' + //--
+                            '</table>' + //--
+                            '<br><br>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --' + myth.name + ' --setname ?{Name?|Insert Name}">Set Name</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --' + myth.name + ' --setdesc ?{Description?|Insert Desc}">Set Description</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --add ?{Name?|Insert Name}">Add Mythic Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --mythic_actions --rem ?{Mythic Action?|' + mythlist + '}">Remove Mythic Action</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                            '</div>'
+                        );
+                    }
+                }
+            }
+        }
     },
 
     editMyth = function(mon,myth,option,val1,val2,val3) {
 
     },
 
+    createAct = function(mon,act) {
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that name!");
+        } else if (mon) {
+            for (let i=0;i<state.monster.length;i++) {
+                if (state.monster[i].name==mon.name) {
+                    let monattr=findObjs({
+                        _type: 'attribute',
+                        _characterid: mon.id
+                    });
+                    let existing=false;
+                    _.each(monattr, function(attr) {
+                        let name = attr.get('_name');
+                        if (name.includes("repeating_npcaction") && (!name.includes("-l") && !name.includes("-m")) && name.includes("_name")) {
+                            existing=true;
+                        }
+                    });
+                    if (existing==false) {
+                        sendChat("Encounter Creator","!setattr --charid " + mon.id + " --repeating_npcaction_-CREATE_name|" + act);
+                        monattr=findObjs({
+                            _type: 'attribute',
+                            _characterid: mon.id
+                        });
+                        let actid;
+                        _.each(monattr, function(attr) {
+                            let name = attr.get('_name');
+                            if (name.includes("repeating_npcaction") && (!name.includes("-l") && !name.includes("-m")) && name.includes("_name")) {
+                                if (attr.get('current')==act) {
+                                    actid=name.replace("repeating_npcaction_","").replace("_name","");
+                                }
+                            }
+                        });
+                        state.monster[i].actions.push(
+                            {
+                                name: act,
+                                desc: "",
+                                attack: false,
+                                atktype: "",
+                                dmg: "",
+                                dmgtype: "",
+                                range: "",
+                                tohit: 0,
+                                id: actid
+                            }
+                        );
+                        sendChat("Encounter Creator","/w gm Created Action with the Name \"" + act + "\".\n\nID: " + actid);
+                    } else if (existing==true) {
+                        sendChat("Encounter Creator","/w gm Action with that Name exists - aborting creation!");
+                    }
+                }
+            }
+        }
+    },
+
+    createReact = function(mon,react) {
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that name!");
+        } else if (mon) {
+            for (let i=0;i<state.monster.length;i++) {
+                if (state.monster[i].name==mon.name) {
+                    let monattr=findObjs({
+                        _type: 'attribute',
+                        _characterid: mon.id
+                    });
+                    let existing=false;
+                    _.each(monattr, function(attr) {
+                        let name = attr.get('_name');
+                        if (name.includes("repeating_npcreaction") && name.includes("_name")) {
+                            existing=true;
+                        }
+                    });
+                    if (existing==false) {
+                        sendChat("Encounter Creator","!setattr --charid " + mon.id + ' --repeating_npcreaction_-CREATE_name|' + react);
+                        monattr=findObjs({
+                            _type: 'attribute',
+                            _characterid: mon.id
+                        });
+                        let reactid;
+                        _.each(monattr, function(attr) {
+                            let name = attr.get('_name');
+                            if (name.includes("repeating_npcreaction") && name.includes("_name")) {
+                                if (attr.get("current")==react) {
+                                    reactid=name.replace("repeating_npcreaction_","").replace("_name","");
+                                }
+                            }
+                        });
+                        state.monster[i].reactions.push(
+                            {
+                                name: react,
+                                desc: "",
+                                id: reactid
+                            }
+                        );
+                        sendChat("Encounter Creator","/w gm Created Reaction with the Name \"" + react + "\".\n\nID: " + reactid);
+                    } else if (existing==true) {
+                        sendChat("Encounter Creator","/w gm Reaction with that Name exists - aborting creation!");
+                    }
+                }
+            }
+        }
+    },
+
+    createBA = function(mon,ba) {
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that name!");
+        } else if (mon) {
+            for (let i=0;i<state.monster.length;i++) {
+                if (state.monster[i].name==mon.name) {
+                    let monattr=findObjs({
+                        _type: 'attribute',
+                        _characterid: mon.id
+                    });
+                    let existing=false;
+                    _.each(monattr, function(attr) {
+                        let name = attr.get('_name');
+                        if (name.includes("repeating_npcbonusaction") && name.includes("_name")) {
+                            existing=true;
+                        }
+                    });
+                    if (existing==false) {
+                        sendChat("Encounter Creator","!setattr --charid " + mon.id + " --repeating_npcbonusaction_-CREATE_name|" + ba);
+                        monattr = findObjs({
+                            _type: 'attribute',
+                            _characterid: mon.id
+                        });
+                        let baid;
+                        _.each(monattr, function(attr) {
+                            let name = attr.get('_name');
+                            if (name.includes("repeating_npcbonusaction" && name.includes("_name"))) {
+                                if (attr.get('current')==ba) {
+                                    baid=name.replace("repeating_npcbonusaction_","").replace("_name","");
+                                }
+                            }
+                        });
+                        state.monster[i].bonus_actions.push(
+                            {
+                                name: ba,
+                                desc: "",
+                                attack: false,
+                                atktype: "",
+                                dmg: "",
+                                dmgtype: "",
+                                range: "",
+                                tohit: 0,
+                                id: baid
+                            }
+                        );
+                        sendChat("Encounter Creator","/w gm Created Bonus Action with the Name \"" + ba + "\".\n\nID: " + baid);
+                    } else if (existing==true) {
+                        sendChat("Encounter Creator","/w gm Bonus Action with that Name exists - aborting creation!");
+                    }
+                }
+            }
+        }
+    },
+
+    createTrait = function(mon,trait) {
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that name!");
+        } else if (mon) {
+            for (let i=0;i<state.monster.length;i++) {
+                if (state.monster[i].name==mon.name) {
+                    let monattr=findObjs({
+                        _type: 'attribute',
+                        _characterid: mon.id
+                    });
+                    let existing=false;
+                    _.each(monattr, function(attr) {
+                        let name = attr.get('_name');
+                        if (name.includes("repeating_npctrait") && name.includes("_name")) {
+                            existing=true;
+                        }
+                    });
+                    if (existing==false) {
+                        sendChat("Encounter Creator","!setattr --charid " + mon.id + " --repeating_npctrait_-CREATE_name|" + trait);
+                        monattr=findObjs({
+                            _type: 'attribute',
+                            _characterid: mon.id
+                        });
+                        let traitid;
+                        _.each(monattr, function(attr) {
+                            let name = attr.get("_name");
+                            if (name.includes("repeating_npctrait") && name.includes("_name")) {
+                                if (attr.get('current')==trait) {
+                                    traitid=name.replace("repeating_npctrait_","").replace("_name");
+                                }
+                            }
+                        });
+                        state.monster[i].traits.push(
+                            {
+                                name: trait,
+                                desc: "",
+                                id: traitid
+                            }
+                        );
+                        sendChat("Encounter Creator","/w gm Created Trait with the Name \"" + trait + "\".\n\nID: " + traitid);
+                    } else if (existing==true) {
+                        sendChat("Encounter Creator","/w gm Trait with that Name already exists - aborting creation!");
+                    }
+                }
+            }
+        }
+    },
+
+    createLeg = function(mon,leg) {
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that name!");
+        } else if (mon) {
+            for (let i=0;i<state.monster.length;i++) {
+                if (state.monster[i].name==mon.name) {
+                    let monattr=findObjs({
+                        _type: 'attribute',
+                        _characterid: mon.id
+                    });
+                    let existing=false;
+                    _.each(monattr, function(attr) {
+                        let name = attr.get('_name');
+                        if (name.includes("repeating_npcaction-l") && name.includes("_name")) {
+                            existing=true;
+                        }
+                    });
+                    if (existing==false) {
+                        sendChat("Encounter Creator","!setattr --charid " + mon.id + " --repeating_npcaction-l_-CREATE_name|" + leg);
+                        monattr=findObjs({
+                            _type: 'attribute',
+                            _characterid: mon.id
+                        });
+                        let legid;
+                        _.each(monattr, function(attr) {
+                            let name = attr.get('_name');
+                            if (name.includes("repeating_npcaction-l") && name.includes("_name")) {
+                                if (attr.get('current')==leg) {
+                                    legid=name.replace("repeating_npcaction-l_","").replace("_name","");
+                                }
+                            }
+                        });
+                        state.monster[i].legendary_actions.push(
+                            {
+                                name: leg,
+                                desc: "",
+                                attack: false,
+                                atktype: "",
+                                dmg: "",
+                                dmgtype: "",
+                                range: "",
+                                tohit: 0,
+                                id: legid
+                            }
+                        );
+                        sendChat("Encounter Creator","/w gm Created Legendary Action with the Name \"" + leg + "\".\n\nID: " + legid);
+                    } else if (existing==true) {
+                        sendChat("Encounter Creator","/w gm Legendary Action with that Name already exists - aborting creation!");
+                    }
+                }
+            }
+        }
+    },
+
+    createMyth = function(mon,myth) {
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that name!");
+        } else if (mon) {
+            for (let i=0;i<state.monster.length;i++) {
+                if (state.monster[i].name==mon.name) {
+                    let monattr=findObjs({
+                        _type: 'attribute',
+                        _characterid: mon.id
+                    });
+                    let existing=false;
+                    _.each(monattr, function(attr) {
+                        let name = attr.get('_name');
+                        if (name.includes("repeating_npcaction-m") && name.includes("_name")) {
+                            existing=true;
+                        }
+                    });
+                    if (existing==false) {
+                        sendChat("Encounter Creator","!setattr --charid " + mon.id + " --repeating_npcaction-m_-CREATE_name|" + myth);
+                        monattr=findObjs({
+                            _type: 'attribute',
+                            _characterid: mon.id
+                        });
+                        let mythid;
+                        _.each(monattr, function(attr) {
+                            let name = attr.get('_name');
+                            if (name.includes("repeating_npcaction-m") && name.includes("_name")) {
+                                if (attr.get('current')==myth) {
+                                    mythid=name.replace("repeating_npcaction-m_","").replace("_name","");
+                                }
+                            }
+                        });
+                        state.monster[i].mythic_actions.push(
+                            {
+                                name: myth,
+                                desc: "",
+                                attack: false,
+                                atktype: "",
+                                dmg: "",
+                                dmgtype: "",
+                                range: "",
+                                tohit: 0,
+                                id: mythid
+                            }
+                        );
+                        sendChat("Encounter Creator","/w gm Created Mythic Action with the Name \"" + myth + "\".\n\nID: " + mythid);
+                    } else if (existing==true) {
+                        sendChat("Encounter Creator","/w gm Mythic Action with that Name already exists - aborting creation!")
+                    }
+                }
+            }
+        }
+    },
+
     resetMonster = function(mon) {
 
     },
 
-    
+    createParty = function(party) {
+
+    },
+
+    partyMenu = function(party) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+
+    },
+
+    partyAdd = function(party,char) {
+
+    },
+
+    partyRem = function(party,char) {
+
+    },
+
+    deleteParty = function(party) {
+
+    },
 
     checkDefaults = function() {
         if (!state.encounter) {
@@ -1031,6 +2320,9 @@ var EncounterCreator = EncounterCreator || (function() {
         }
         if (!state.monster) {
             setMonsterDefaults();
+        }
+        if (!state.encbasics) {
+            setBasicDefaults();
         }
     },
 
