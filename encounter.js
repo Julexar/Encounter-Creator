@@ -22,6 +22,7 @@ API Commands (GM Only):
         --loot - Shows the Loot table
         --monsters - Shows a list of all Monsters
         --submit - Finishes the encounter creation and creates Monsters as well as a Handout for loot
+            --ignorecr - Ignores the minimum and maximum CR when making the Monsters
         --delete - Deletes the Encounter
     --reset - Resets the encounter to the default
 !monster - Pulls up the Monster Menu
@@ -222,6 +223,14 @@ var EncounterCreator = EncounterCreator || (function() {
                         val: 0
                     },
                 ],
+                stat: {
+                    str:0,
+                    dex:0,
+                    con:0,
+                    int:0,
+                    wis:0,
+                    cha:0
+                },
                 vuln: "",
                 res: "",
                 dmgimm: "",
@@ -420,27 +429,44 @@ var EncounterCreator = EncounterCreator || (function() {
                                         if (!args[5]) {
                                             editEncounter(enc,"item",item);
                                         } else if (args[5].includes("name")) {
-                                            
+                                            let name = args[5].replace("name ","");
+                                            editEncounter(enc,"item","name",name);
                                         } else if (args[5].includes("value")) {
-
+                                            let val = Number(args[5].replace("value ",""));
+                                            editEncounter(enc,"item","value",val);
                                         } else if (args[5].includes("desc")) {
-
+                                            let desc = args[5].replace("desc ","");
+                                            editEncounter(enc,"item","desc",desc);
                                         } else if (args[5].includes("rarity")) {
-
-                                        } else if (args[5].includes("type")) {
-
+                                            let rare = args[5].replace("rarity ","");                                        } else if (args[5].includes("type")) {
+                                            editEncounter(enc,"item","rarity",rare);
                                         } else if (args[5].includes("attack")) {
-
+                                            let attack = Boolean(args[5].replace("attack ",""));
+                                            editEncounter(enc,"item","attack",attack);
                                         } else if (args[5].includes("sec")) {
-
+                                            let secdmg = args[5].replace("secdamage ","");
+                                            if (!args[6]) {
+                                                sendChat("Encounter Creator","/w gm Missing Damage Type for secondary damage!");
+                                            } else if (args[6].includes("type")) {
+                                                let secdmgtype = args[5].replace("type ","");
+                                                editEncounter(enc,"item","secdamage",secdmg,secdmgtype);
+                                            }
                                         } else if (args[5].includes("damage")) {
-
+                                            let dmg = args[5].replace("damage ","");
+                                            if (!args[6]) {
+                                                sendChat("Encounter Creator","/w gm Missing Damage Type for primary damage!");
+                                            } else if (args[6].includes("type")) {
+                                                let dmgtype = args[6].replace("type ","");
+                                                editEncounter(enc,"item","damage",dmg,dmgtype);
+                                            }
                                         } else if (args[5].includes("tohit")) {
-
+                                            let tohit = args[5].replace("tohit ","");
+                                            editEncounter(enc,"item","tohit",tohit);
                                         } else if (args[5].includes("magic")) {
-
+                                            let magic = args[5].replace("magic ","");
+                                            editEncounter(enc,"item","magic",magic);
                                         } else if (args[5].includes("confirm")) {
-
+                                            editEncounter(enc,"item","confirm");
                                         }
                                     }
                                 }
@@ -477,7 +503,12 @@ var EncounterCreator = EncounterCreator || (function() {
                         } else if (args[2]=="monsters") {
                             viewMonsters(enc);
                         } else if (args[2]=="submit") {
-                            submitEnc(enc);
+                            if (!args[3]) {
+                                submitEnc(enc);
+                            } else if (args[3].includes("ignorecr")) {
+                                let ignore=args[3].replace("ignorecr ","");
+                                submitEnc(enc,ignore);
+                            }
                         } else if (args[2]=="reset") {
                             resetEnc(enc);
                         }
@@ -1147,7 +1178,7 @@ var EncounterCreator = EncounterCreator || (function() {
         }
     },
 
-    editEncounter = function(enc,option,val1,val2) {
+    editEncounter = function(enc,option,val1,val2,val3) {
         enc=state.encounter.find(e => e.name==enc);
         switch (option) {
             case 'name':
@@ -1526,7 +1557,7 @@ var EncounterCreator = EncounterCreator || (function() {
                         itemMenu(itam.name);
                     }
                 } else if (itam) {
-                    itemEditor(enc.name,item.name);
+                    itemEditor(enc.name,item.name,val1,val2,val3);
                 }
             break;
         }
@@ -1946,7 +1977,27 @@ var EncounterCreator = EncounterCreator || (function() {
                     '</div>'
                 );
             } else if (item.attack==false) {
-
+                sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                    '<div ' + headstyle + '>Item Editor</div>' + //--
+                    '<div ' + arrowstyle + '></div>' + //--
+                    '<div style="text-align:center;">Encounter: <a ' + astyle1 + '" href="!enc --?{Encounter?|' + encList + '} --edit --loot">' + enc.name + '</a></div>' + //--
+                    '<div style="text-align:center;">Item: <a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --?{Item?|' + items + '}">' + item.name + '</a></div>' + //--
+                    '<br><br>' + //--
+                    '<table>' + //--
+                    '<tr><td><b>Name: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --name ?{Name?|Insert Name}">' + item.name + '</a></td></tr>' + //--
+                    '<tr><td><b>Price: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --value ?{Price?|1}">' + item.value + ' GP</a></td></tr>' + //--
+                    '<tr><td><b>Rarity: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --rarity ?{Rarity?|Common|Uncommon|Rare|Very Rare|Legendary|Artifact}">' + item.rarity + '</a></td></tr>' + //--
+                    '<tr><td><b>Type: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --type ?{Type?|Melee Weapon|Ranged Weapon|Light Armor|Medium Armor|Heavy Armor|Shield|Potion|Scroll|Wondrous Item|Misc}">' + item.type + '</a></td></tr>' + //--
+                    '<tr><td><b>Has Attack: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --attack ?{Attack?|true|false}">' + item.attack + '</a></td></tr>' + //--
+                    '<tr><td><b>Description (1/2): </b></td><td>' + desc[0] + '</td></tr>' + //--
+                    '<tr><td><b>Description (2/2): </b></td><td>' + desc[1] + '</td></tr>' + //--
+                    '</table>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --desc ?{Description?|Insert;Desc}">Set Description</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --confirm">Apply Changes</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + '">Go Back</a></div>' + //--
+                    '</div>'
+                );
             }
         }
     },
@@ -1955,12 +2006,453 @@ var EncounterCreator = EncounterCreator || (function() {
 
     },
 
-    submitEnc = function(enc) {
-
+    submitEnc = function(enc,ignore) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        enc=state.encounter.find(e => e.name==enc);
+        if (!enc) {
+            sendChat("Encounter Creator","/w gm Could not find an Encounter with that name.");
+        } else if (enc) {
+            let monsters = enc.monsters;
+            if (!ignore) {
+                for (let i=0;i<monsters.length;i++) {
+                    if (monsters[i].cr>enc.maxcr || monsters[i].cr<enc.mincr) {
+                        sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                            '<div ' + headstyle + '>Submit Encounter</div>' + //--
+                            '<div ' + arrowstyle + '></div>' + //--
+                            '<div style="text-align:center;">Are you sure you want to submit the Encounter?<br><br>One or more Monsters have a CR that is outside the Encounter\'s minimum/maximum CR Range.</div>' + //--
+                            '<br>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --submit --ignorecr true">Confirm</a></div>' + //--
+                            '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --submit --ignorecr false">Cancel</a></div>' + //--
+                            '</div>'
+                        );
+                    }
+                }
+            } else if (ignore=="true") {
+                for (let i=0;i<monsters.length;i++) {
+                    let monster = monsters[i];
+                    let monsheet = createObj('character',{
+                        name: monster.name
+                    });
+                    let monid = monsheet.get('_id');
+                    monster.id=monid;
+                    sendChat("Encounter Creator",`!setattr --charid ${monid} --npc|1 --charactersheet_type|npc --npc_name|${monster.name} --npc_type|${monster.type} --npc_ac|${monster.ac} --npc_actype|actype --hp|${monster.hp} --npc_speed|${monster.speed} --npc_vulnerabilities|${monster.vuln} --npc_resistances|${monster.res} --npc_immunities|${monster.dmgimm} --npc_condition_immunities|${monster.condimm} --npc_challenge|${monster.cr} --pb|${monster.pb} --npc_pb|${monster.pb} --strength_base|${monster.stat.str} --dexterity_base|${monster.stat.dex} --constitution_base|${monster.stat.con} --intelligence_base|${monster.stat.int} --wisdom_base|${monster.stat.wis} --charisma_base|${monster.stat.cha} --npc_legendary_actions|${monster.legendary}`);
+                    if (monster.caster==true) {
+                        sendChat("Encounter Creator",`!setattr --charid ${monid} --npcspellcastingflag|1 --caster_level|${monster.caster_lvl} --spell_attack_mod|${monster.spell_atk_mod} --spell_save_dc|${monster.spell_dc_mod} --spellcasting_ability|@{${cast_ability}}+`);
+                    } else if (monster.caster==false) {
+                        sendChat("Encounter Creator",`!setattr --charid ${monid} --npcspellcastingflag|0`);
+                    }
+                    if (monster.save.length>=1) {
+                        for (let j=0;j<monster.save.length;j++) {
+                            let attr = monster.save[j].name;
+                            let val = monster.save[j].val;
+                            sendChat("Encounter Creator",`!setattr --charid ${monid} --npc_${attr.toLowerCase()}_save_base|${val}`);
+                        }
+                    }
+                    if (monster.skill.length>=1) {
+                        for (let j=0;j<monster.skill.length;j++) {
+                            let skill = monster.skill[j].name;
+                            let val = monster.skill[j].val;
+                            sendChat("Encounter Creator",`!setattr --charid ${monid} --npc_${skill.toLowerCase()}_base|${val}`);
+                        }
+                    }
+                    if (monster.bonusact==true) {
+                        sendChat("Encounter Creator",`!setattr --charid ${monid} --npcbonusactionflag|1`);
+                    } else if (monster.bonusact==false) {
+                        sendChat("Encounter Creator",`!setattr --charid ${monid} --npcbonusactionflag|0`);
+                    }
+                    if (monster.react==true) {
+                        sendChat("Encounter Creator",`!setattr --charid ${monid} --npcreactionsflag|1`);
+                    } else if (monster.react==false) {
+                        sendChat("Encounter Creator",`!setattr --charid ${monid} --npcreactionsflag|0`);
+                    }
+                    if (monster.mythic==true) {
+                        sendChat("Encounter Creator",`!setattr --charid ${monid} --npc_mythic_actions|1 --npc_mythic_actions_desc|${monster.mythic_desc}`);
+                    } else if (monster.mythic==false) {
+                        sendChat("Encounter Creator",`!setattr --charid ${monid} --npc_mythic_actions|0`);
+                    }
+                    if (monster.traits.length>=1) {
+                        for (let j=0;j<monster.traits.length;j++) {
+                            let trait=monster.traits[j];
+                            sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npctrait_-CREATE_name|${trait.name} --repeating_npctrait_-CREATE_description|${trait.desc}`);
+                        }
+                        let traits = findObjs({
+                            _type: 'attribute',
+                            characterid: monid
+                        });
+                        _.each(traits, function(object) {
+                            let name=object.get('name');
+                            if (name.includes("repeating_npctrait") && name.includes("_name")) {
+                                let trname = object.get('current');
+                                for (let j=0;j<monster.traits.length;j++) {
+                                    if (monster.traits[j].name==trname) {
+                                        let id = name.replace("repeating_npctrait_","").replace("_name","");
+                                        monster.traits[j].id=id;
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    if (monster.actions.length>=1) {
+                        for (let j=0;j<monster.actions.length;j++) {
+                            let act = monster.actions[i];
+                            if (act.attack==true) {
+                                sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcaction_-CREATE_name|${act.name} --repeating_npcaction_-CREATE_description|${act.desc} --repeating_npcaction_-CREATE_attack_flag|on --repeating_npcaction_-CREATE_attack_range|${act.range} --repeating_npcaction_-CREATE_attack_tohit|${act.tohit} --repeating_npcaction_-CREATE_attack_type|${act.atktype} --repeating_npcaction_-CREATE_attack_damage|${act.dmg} --repeating_npcaction_-CREATE_attack_damagetype|${act.dmgtype}`);
+                            } else if (act.attack==false) {
+                                sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcaction_-CREATE_name|${act.name} --repeating_npcaction_-CREATE_description|${act.desc} --repeating_npcaction_-CREATE_attack_flag|0`);
+                            }
+                        }
+                    }
+                    let acts = findObjs({
+                        _type: 'attribute',
+                        characterid: monid
+                    });
+                    _.each(acts, function(object) {
+                        let name=object.get('name');
+                        if (name.includes("repeating_npcaction_") && name.includes("_name")) {
+                            let aname = object.get('current');
+                            for (let j=0;j<monster.actions.length;j++) {
+                                if (monster.actions[j].name==aname) {
+                                    let id = name.replace("repeating_npcaction_","").replace("_name","");
+                                    monster.actions[j].id=id;
+                                }
+                            }
+                        }
+                    });
+                    if (monster.bonus_actions.length>=1) {
+                        for (let j=0;j<monster.bonus_actions.length;j++) {
+                            let ba = monster.bonus_actions[j];
+                            if (ba.attack==true) {
+                                sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcbonusaction_-CREATE_name|${ba.name} --repeating_npcbonusaction_-CREATE_description|${ba.desc} --repeating_npcbonusaction_-CREATE_attack_flag|on --repeating_npcbonusaction_-CREATE_attack_range|${ba.range} --repeating_npcbonusaction_-CREATE_attack_tohit|${ba.tohit} --repeating_npcbonusaction_-CREATE_attack_type|${ba.atktype} --repeating_npcbonusaction_-CREATE_attack_damage|${ba.dmg} --repeating_npcbonusaction_-CREATE_attack_damagetype|${ba.dmgtype}`);
+                            } else if (ba.attack==false) {
+                                sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcbonusaction_-CREATE_name|${ba.name} --repeating_npcbonusaction_-CREATE_description|${ba.desc} --repeating_npcbonusactions_-CREATE_attack_flag|0`);
+                            }
+                        }
+                    }
+                    let bas = findObjs({
+                        _type: 'attribute',
+                        characterid: monid
+                    });
+                    _.each(bas, function(object) {
+                        let name=object.get('name');
+                        if (name.includes("repeating_npcbonusaction_") && name.includes("_name")) {
+                            let baname = object.get('current');
+                            for (let j=0;j<monster.bonus_actions.length;j++) {
+                                if (monster.bonus_actions[j].name==baname) {
+                                    let id = name.replace("repeating_npcbonusaction_","").replace("_name","");
+                                    monster.bonus_actions[i].id=id;
+                                }
+                            }
+                        }
+                    });
+                    if (monster.legendary_actions.length>=1) {
+                        for (let j=0;j<monster.legendary_actions.length;j++) {
+                            let leg = monster.legendary_actions[j];
+                            if (leg.attack==true) {
+                                sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcaction-l_-CREATE_name|${leg.name} --repeating_npcaction-l_-CREATE_description|${leg.desc} --repeating_npcaction-l_-CREATE_attack_flag|on --repeating_npcaction-l_-CREATE_attack_range|${leg.range} --repeating_npcaction-l_-CREATE_attack_tohit|${leg.tohit} --repeating_npcaction-l_-CREATE_attack_type|${leg.atktype} --repeating_npcaction-l_-CREATE_attack_damage|${leg.dmg} --repeating_npcaction-l_-CREATE_attack_damagetype|${leg.dmgtype}`);
+                            } else if (leg.attack==false) {
+                                sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcaction-l_-CREATE_name|${leg.name} --repeating_npcaction-l_-CREATE_description|${leg.desc} --repeating_npcaction-l_-CREATE_attack_flag|0`);
+                            }
+                        }
+                    }
+                    let legs = findObjs({
+                        _type: 'attribute',
+                        characterid: monid
+                    });
+                    _.each(legs, function(object) {
+                        let name = object.get('name');
+                        if (name.includes("repeating_npcaction-l") && name.includes("_name")) {
+                            let lname = object.get('current');
+                            for (let j=0;j<monster.legendary_actions.length;j++) {
+                                if (monster.legendary_actions[j].name==lname) {
+                                    let id = name.replace("repeating_npcaction-l_","").replace("_name","");
+                                    monster.legendary_actions[j].id=id;
+                                }
+                            }
+                        }
+                    });
+                    if (monster.mythic_actions.length>=1) {
+                        for (let j=0;j<monster.mythic_actions.length;j++) {
+                            let myth = monster.mythic_actions[j];
+                            if (myth.attack==true) {
+                                sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcaction-m_-CREATE_name|${myth.name} --repeating_npcaction-m_-CREATE_description|${myth.desc} --repeating_npcaction-m_-CREATE_attack_flag|on --repeating_npcaction-m_-CREATE_attack_range|${myth.range} --repeating_npcaction-m_-CREATE_attack_tohit|${myth.tohit} --repeating_npcaction-m_-CREATE_attack_type|${myth.atktype} --repeating_npcaction-m_-CREATE_attack_damage|${myth.dmg} --repeating_npcaction-m_-CREATE_attack_damagetype|${myth.dmgtype}`);
+                            } else if (myth.attack==false) {
+                                sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcaction-m_-CREATE_name|${myth.name} --repeating_npcaction-m_-CREATE_description|${myth.desc} --repeating_npcaction-m_-CREATE_attack_flag|0`);
+                            }
+                        }
+                    }
+                    let myths = findObjs({
+                        _type: 'attribute',
+                        characterid: monid
+                    });
+                    _.each(myths, function(object) {
+                        let name = object.get('name');
+                        if (name.includes("repeating_npcaction-m") && name.includes("_name")) {
+                            let mname = object.get('current');
+                            for (let j=0;j<monster.mythic_actions.length;j++) {
+                                if (monster.mythic_actions[j].name==mname) {
+                                    let id = name.repalce("repeating_npcaction-m_","").replace("_name","");
+                                    monster.mythic_actions[j].id=id;
+                                }
+                            }
+                        }
+                    });
+                    if (monster.reactions.length>=1) {
+                        for (let j=0;j<monster.reactions.length;j++) {
+                            let react = monster.reactions[j];
+                            sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcreaction_-CREATE_name|${react.name} --repeating_npcreaction_-CREATE_description|${react.desc}`);
+                        }
+                    }
+                    let reacts = findObjs({
+                        _type: 'attribute',
+                        characterid: monid
+                    });
+                    _.each(reacts, function(object) {
+                        let name = object.get('name');
+                        if (name.includes("repeating_npcreaction") && name.includes("_name")) {
+                            let rname = objeact.get('current');
+                            for (let j=0;j<monster.reactions.length;j++) {
+                                if (monster.reactions[j].name==rname) {
+                                    let id = name.replace("repeating_npcreaction_","").replace("_name","");
+                                    monster.reactions[j].id=id;
+                                }
+                            }
+                        }
+                    });
+                    for (let j=0;j<enc.monsters.length;j++) {
+                        if (enc.monsters[j].name==monster.name) {
+                            enc.monsters[j]=monster;
+                        }
+                    }
+                }
+                for (let i=0;i<state.encounter.length;i++) {
+                    if (state.encounter[i].name==enc.name) {
+                        state.encounter[i]=enc;
+                    }
+                }
+            } else if (ignore=="false") {
+                for (let i=0;i<monsters.length;i++) {
+                    let monster=monsters[i];
+                    if (monster.cr<enc.mincr || monster.maxcr>enc.maxcr) {
+                        sendChat("Encounter Create",`/w gm Addition of Monster \"${monster.name}\" has been skipped because its CR exceeds the set range of Min: ${enc.mincr} Max: ${enc.maxcr}.`);
+                    } else if (monster.cr<=enc.maxcr && monster.cr>=enc.mincr) {
+                        let monsheet = createObj('character',{
+                            name: monster.name
+                        });
+                        let monid = monsheet.get('_id');
+                        monster.id=monid;
+                        sendChat("Encounter Creator",`!setattr --charid ${monid} --npc|1 --charactersheet_type|npc --npc_name|${monster.name} --npc_type|${monster.type} --npc_ac|${monster.ac} --npc_actype|actype --hp|${monster.hp} --npc_speed|${monster.speed} --npc_vulnerabilities|${monster.vuln} --npc_resistances|${monster.res} --npc_immunities|${monster.dmgimm} --npc_condition_immunities|${monster.condimm} --npc_challenge|${monster.cr} --pb|${monster.pb} --npc_pb|${monster.pb} --strength_base|${monster.stat.str} --dexterity_base|${monster.stat.dex} --constitution_base|${monster.stat.con} --intelligence_base|${monster.stat.int} --wisdom_base|${monster.stat.wis} --charisma_base|${monster.stat.cha} --npc_legendary_actions|${monster.legendary}`);
+                        if (monster.caster==true) {
+                            sendChat("Encounter Creator",`!setattr --charid ${monid} --npcspellcastingflag|1 --caster_level|${monster.caster_lvl} --spell_attack_mod|${monster.spell_atk_mod} --spell_save_dc|${monster.spell_dc_mod} --spellcasting_ability|@{${cast_ability}}+`);
+                        } else if (monster.caster==false) {
+                            sendChat("Encounter Creator",`!setattr --charid ${monid} --npcspellcastingflag|0`);
+                        }
+                        if (monster.save.length>=1) {
+                            for (let j=0;j<monster.save.length;j++) {
+                                let attr = monster.save[j].name;
+                                let val = monster.save[j].val;
+                                sendChat("Encounter Creator",`!setattr --charid ${monid} --npc_${attr.toLowerCase()}_save_base|${val}`);
+                            }
+                        }
+                        if (monster.skill.length>=1) {
+                            for (let j=0;j<monster.skill.length;j++) {
+                                let skill = monster.skill[j].name;
+                                let val = monster.skill[j].val;
+                                sendChat("Encounter Creator",`!setattr --charid ${monid} --npc_${skill.toLowerCase()}_base|${val}`);
+                            }
+                        }
+                        if (monster.bonusact==true) {
+                            sendChat("Encounter Creator",`!setattr --charid ${monid} --npcbonusactionflag|1`);
+                        } else if (monster.bonusact==false) {
+                            sendChat("Encounter Creator",`!setattr --charid ${monid} --npcbonusactionflag|0`);
+                        }
+                        if (monster.react==true) {
+                            sendChat("Encounter Creator",`!setattr --charid ${monid} --npcreactionsflag|1`);
+                        } else if (monster.react==false) {
+                            sendChat("Encounter Creator",`!setattr --charid ${monid} --npcreactionsflag|0`);
+                        }
+                        if (monster.mythic==true) {
+                            sendChat("Encounter Creator",`!setattr --charid ${monid} --npc_mythic_actions|1 --npc_mythic_actions_desc|${monster.mythic_desc}`);
+                        } else if (monster.mythic==false) {
+                            sendChat("Encounter Creator",`!setattr --charid ${monid} --npc_mythic_actions|0`);
+                        }
+                        if (monster.traits.length>=1) {
+                            for (let j=0;j<monster.traits.length;j++) {
+                                let trait=monster.traits[j];
+                                sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npctrait_-CREATE_name|${trait.name} --repeating_npctrait_-CREATE_description|${trait.desc}`);
+                            }
+                            let traits = findObjs({
+                                _type: 'attribute',
+                                characterid: monid
+                            });
+                            _.each(traits, function(object) {
+                                let name=object.get('name');
+                                if (name.includes("repeating_npctrait") && name.includes("_name")) {
+                                    let trname = object.get('current');
+                                    for (let j=0;j<monster.traits.length;j++) {
+                                        if (monster.traits[j].name==trname) {
+                                            let id = name.replace("repeating_npctrait_","").replace("_name","");
+                                            monster.traits[j].id=id;
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                        if (monster.actions.length>=1) {
+                            for (let j=0;j<monster.actions.length;j++) {
+                                let act = monster.actions[i];
+                                if (act.attack==true) {
+                                    sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcaction_-CREATE_name|${act.name} --repeating_npcaction_-CREATE_description|${act.desc} --repeating_npcaction_-CREATE_attack_flag|on --repeating_npcaction_-CREATE_attack_range|${act.range} --repeating_npcaction_-CREATE_attack_tohit|${act.tohit} --repeating_npcaction_-CREATE_attack_type|${act.atktype} --repeating_npcaction_-CREATE_attack_damage|${act.dmg} --repeating_npcaction_-CREATE_attack_damagetype|${act.dmgtype}`);
+                                } else if (act.attack==false) {
+                                    sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcaction_-CREATE_name|${act.name} --repeating_npcaction_-CREATE_description|${act.desc} --repeating_npcaction_-CREATE_attack_flag|0`);
+                                }
+                            }
+                        }
+                        let acts = findObjs({
+                            _type: 'attribute',
+                            characterid: monid
+                        });
+                        _.each(acts, function(object) {
+                            let name=object.get('name');
+                            if (name.includes("repeating_npcaction_") && name.includes("_name")) {
+                                let aname = object.get('current');
+                                for (let j=0;j<monster.actions.length;j++) {
+                                    if (monster.actions[j].name==aname) {
+                                        let id = name.replace("repeating_npcaction_","").replace("_name","");
+                                        monster.actions[j].id=id;
+                                    }
+                                }
+                            }
+                        });
+                        if (monster.bonus_actions.length>=1) {
+                            for (let j=0;j<monster.bonus_actions.length;j++) {
+                                let ba = monster.bonus_actions[j];
+                                if (ba.attack==true) {
+                                    sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcbonusaction_-CREATE_name|${ba.name} --repeating_npcbonusaction_-CREATE_description|${ba.desc} --repeating_npcbonusaction_-CREATE_attack_flag|on --repeating_npcbonusaction_-CREATE_attack_range|${ba.range} --repeating_npcbonusaction_-CREATE_attack_tohit|${ba.tohit} --repeating_npcbonusaction_-CREATE_attack_type|${ba.atktype} --repeating_npcbonusaction_-CREATE_attack_damage|${ba.dmg} --repeating_npcbonusaction_-CREATE_attack_damagetype|${ba.dmgtype}`);
+                                } else if (ba.attack==false) {
+                                    sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcbonusaction_-CREATE_name|${ba.name} --repeating_npcbonusaction_-CREATE_description|${ba.desc} --repeating_npcbonusactions_-CREATE_attack_flag|0`);
+                                }
+                            }
+                        }
+                        let bas = findObjs({
+                            _type: 'attribute',
+                            characterid: monid
+                        });
+                        _.each(bas, function(object) {
+                            let name=object.get('name');
+                            if (name.includes("repeating_npcbonusaction_") && name.includes("_name")) {
+                                let baname = object.get('current');
+                                for (let j=0;j<monster.bonus_actions.length;j++) {
+                                    if (monster.bonus_actions[j].name==baname) {
+                                        let id = name.replace("repeating_npcbonusaction_","").replace("_name","");
+                                        monster.bonus_actions[i].id=id;
+                                    }
+                                }
+                            }
+                        });
+                        if (monster.legendary_actions.length>=1) {
+                            for (let j=0;j<monster.legendary_actions.length;j++) {
+                                let leg = monster.legendary_actions[j];
+                                if (leg.attack==true) {
+                                    sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcaction-l_-CREATE_name|${leg.name} --repeating_npcaction-l_-CREATE_description|${leg.desc} --repeating_npcaction-l_-CREATE_attack_flag|on --repeating_npcaction-l_-CREATE_attack_range|${leg.range} --repeating_npcaction-l_-CREATE_attack_tohit|${leg.tohit} --repeating_npcaction-l_-CREATE_attack_type|${leg.atktype} --repeating_npcaction-l_-CREATE_attack_damage|${leg.dmg} --repeating_npcaction-l_-CREATE_attack_damagetype|${leg.dmgtype}`);
+                                } else if (leg.attack==false) {
+                                    sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcaction-l_-CREATE_name|${leg.name} --repeating_npcaction-l_-CREATE_description|${leg.desc} --repeating_npcaction-l_-CREATE_attack_flag|0`);
+                                }
+                            }
+                        }
+                        let legs = findObjs({
+                            _type: 'attribute',
+                            characterid: monid
+                        });
+                        _.each(legs, function(object) {
+                            let name = object.get('name');
+                            if (name.includes("repeating_npcaction-l") && name.includes("_name")) {
+                                let lname = object.get('current');
+                                for (let j=0;j<monster.legendary_actions.length;j++) {
+                                    if (monster.legendary_actions[j].name==lname) {
+                                        let id = name.replace("repeating_npcaction-l_","").replace("_name","");
+                                        monster.legendary_actions[j].id=id;
+                                    }
+                                }
+                            }
+                        });
+                        if (monster.mythic_actions.length>=1) {
+                            for (let j=0;j<monster.mythic_actions.length;j++) {
+                                let myth = monster.mythic_actions[j];
+                                if (myth.attack==true) {
+                                    sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcaction-m_-CREATE_name|${myth.name} --repeating_npcaction-m_-CREATE_description|${myth.desc} --repeating_npcaction-m_-CREATE_attack_flag|on --repeating_npcaction-m_-CREATE_attack_range|${myth.range} --repeating_npcaction-m_-CREATE_attack_tohit|${myth.tohit} --repeating_npcaction-m_-CREATE_attack_type|${myth.atktype} --repeating_npcaction-m_-CREATE_attack_damage|${myth.dmg} --repeating_npcaction-m_-CREATE_attack_damagetype|${myth.dmgtype}`);
+                                } else if (myth.attack==false) {
+                                    sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcaction-m_-CREATE_name|${myth.name} --repeating_npcaction-m_-CREATE_description|${myth.desc} --repeating_npcaction-m_-CREATE_attack_flag|0`);
+                                }
+                            }
+                        }
+                        let myths = findObjs({
+                            _type: 'attribute',
+                            characterid: monid
+                        });
+                        _.each(myths, function(object) {
+                            let name = object.get('name');
+                            if (name.includes("repeating_npcaction-m") && name.includes("_name")) {
+                                let mname = object.get('current');
+                                for (let j=0;j<monster.mythic_actions.length;j++) {
+                                    if (monster.mythic_actions[j].name==mname) {
+                                        let id = name.repalce("repeating_npcaction-m_","").replace("_name","");
+                                        monster.mythic_actions[j].id=id;
+                                    }
+                                }
+                            }
+                        });
+                        if (monster.reactions.length>=1) {
+                            for (let j=0;j<monster.reactions.length;j++) {
+                                let react = monster.reactions[j];
+                                sendChat("Encounter Creator",`!setattr --charid ${monid} --repeating_npcreaction_-CREATE_name|${react.name} --repeating_npcreaction_-CREATE_description|${react.desc}`);
+                            }
+                        }
+                        let reacts = findObjs({
+                            _type: 'attribute',
+                            characterid: monid
+                        });
+                        _.each(reacts, function(object) {
+                            let name = object.get('name');
+                            if (name.includes("repeating_npcreaction") && name.includes("_name")) {
+                                let rname = objeact.get('current');
+                                for (let j=0;j<monster.reactions.length;j++) {
+                                    if (monster.reactions[j].name==rname) {
+                                        let id = name.replace("repeating_npcreaction_","").replace("_name","");
+                                        monster.reactions[j].id=id;
+                                    }
+                                }
+                            }
+                        });
+                        for (let j=0;j<enc.monsters.length;j++) {
+                            if (enc.monsters[j].name==monster.name) {
+                                enc.monsters[j]=monster;
+                            }
+                        }
+                    }
+                }
+                for (let i=0;i<state.encounter.length;i++) {
+                    if (state.encounter[i].name==enc.name) {
+                        state.encounter[i]=enc;
+                    }
+                }
+            }
+        }
     },
 
-    resetEnc = function() {
-
+    resetEnc = function(enc) {
+        for (let i=0;i<state.encounter.length;i++) {
+            if (state.encounter[i].name==enc) {
+                state.encounter[i].mincr=0;
+                state.encounter[i].maxcr=0;
+                state.encounter[i].loot.items=[];
+                state.encounter[i].loot.gold=0;
+                state.encounter[i].monsters=[];
+                state.encounter[i].party=[];
+            }
+        } 
     },
 
     viewMonsters = function(enc) {
@@ -2066,9 +2558,7 @@ var EncounterCreator = EncounterCreator || (function() {
             sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
                 '<div ' + headstyle + '>Loot Table</div>' + //--
                 '<div ' + arrowstyle + '></div>' + //--
-                '<table ' + tablestyle + '>' + //--
-                '<tr><td style="text-align:left;">Encounter: </td><td style="text-align:center;"><a ' + astyle1 + '" href="!enc --?{Encounter?|' + enclist + '} --loot">' + enc.name + '</a></td></tr>' + //--
-                '</table>' + //--
+                '<div style="text-align:center;">Encounter: <a ' + astyle1 + '" href="!enc --?{Encounter?|' + enclist + '} --loot">' + enc.name + '</a></div>' + //--
                 '<br><br>' + //--
                 '<table>' + //--
                 '<thead>' + //--
@@ -2084,10 +2574,22 @@ var EncounterCreator = EncounterCreator || (function() {
                 '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + '">Go Back</a></div>' + //--
                 '</div>'
             );
+        } else if (!loot.length || loot.length==0) {
+            sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                '<div ' + headstyle + '>Loot Table</div>' + //--
+                '<div ' + substyle + '></div>' + //--
+                '<div style="text-align:center;">Encounter: <a ' + astyle1 + '" href="!enc --?{Encounter?|' + enclist + '} --loot">' + enc.name + '</a></div>' + //--
+                '<br><br>' + //--
+                '<div style="text-align:center;"><b>No Items yet...</b></div>' + //--
+                '<br><br>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + ' --genloot ?{Amount?|1} --minrare ?{Minimum Rarity?|Common|Uncommon|Rare|Very Rare|Legendary} --maxrare ?{Maximum Rarity?|Common|Uncommon|Rare|Very Rare|Legendary} --overwrite ?{Overwrite Table?|true|false}">Generate Loot</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --' + enc.name + '">Go Back</a></div>' + //--
+                '</div>'
+            );
         }
     },
 
-    monsterMenu = function(mon,enc) {
+    monsterMenu = function(mon) {
         var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
         var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
         var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
@@ -2097,7 +2599,82 @@ var EncounterCreator = EncounterCreator || (function() {
         var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
         var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
         var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
-
+        mon=state.monster.find(m => m.name==mon);
+        let monlist=[];
+        for (let i=0; i<state.monster.length;i++) {
+            monlist.push(state.monster[i].name);
+        }
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                '<div ' + headstyle + '>Monster Menu</div>' + //--
+                '<div ' + arrowstyle + '></div>' + //--
+                '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '}">Not selected</a></div>' + //--
+                '</div>'
+            );
+        } else if (mon) {
+            let skilllist='';
+            let count=0;
+            for (let i=0;i<mon.skill.length;i++) {
+                let skill=mon.skill[i];
+                if (count>5) {
+                    skilllist+='<tr>';
+                    count=0;
+                } else if (count <5) {
+                    skilllist+='<td>' + skill.name + ' (' + skill.val + ')</td>';
+                } else if (count==5) {
+                    skilllist+='</tr>';
+                }
+                count++;
+            }
+            let savelist='';
+            for (let i=0;i<mon.save.length;i++) {
+                let save = mon.save[i];
+                savelist+='<td>' + save.name + ' (' + save.val + ')</td>';
+            }
+            sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                '<div ' + headstyle + '>Monster Menu</div>' + //--
+                '<div ' + arrowstyle + '></div>' + //--
+                '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monlist + '}">' + mon.name + '</a></div>' + //--
+                '<br><br>' + //--
+                '<div style="text-align:center;"><b>Stats</b></div>' + //--
+                '<br>' + //--
+                '<table>' + //--
+                '<tr><td>Type: </td><td>' + mon.type + '</td></tr>' + //--
+                '<tr><td>Str (' + mon.stat.str + ')</td><td>Dex (' + mon.stat.dex + ')</td><td>Con (' + mon.stat.con + ')</td></tr>' + //--
+                '<tr><td>Int (' + mon.stat.int + ')</td><td>Wis (' + mon.stat.wis+ ')</td><td>Cha (' + mon.stat.cha + ')</td></tr>' + //--
+                '</table>' + //--
+                '<br>' + //--
+                '<div style="text-align:center;"><b>Saves</b></div>' + //--
+                '<br>' + //--
+                '<table>' + //--
+                '<tr>' + savelist + '</tr>' + //--
+                '</table>' + //--
+                '<br>' + //--
+                '<div style="text-align:center;"><b>Skills</b></div>' + //--
+                '<br>' + //--
+                '<table>' + //--
+                '<tr>' + skilllist + //--
+                '</table>' + //--
+                '<br>' + //--
+                '<div style="text-align:center;"><b>General</b></div>' + //--
+                '<br>' + //--
+                '<table>' + //--
+                '<tr><td>CR: </td><td>' + mon.cr + '</td></tr>' + //--
+                '<tr><td>HP: </td><td>' + mon.hp + '</td></tr>' + //--
+                '<tr><td>AC: </td><td>' + mon.ac + ' (' + mon.actype + ')</td></tr>' + //--
+                '<tr><td>PB: </td><td>' + mon.pb + '</td></tr>' + //--
+                '<tr><td>Traits: </td><td>' + mon.traits.length + '</td></tr>' + //--
+                '<tr><td>Actions: </td><td>' + mon.actions.length + '</td></tr>' + //--
+                '<tr><td>Bonus Actions: </td><td>' + mon.bonus_actions.length + '</td></tr>' + //--
+                '<tr><td>Reactions: </td><td>' + mon.reactions.length + '</td></tr>' + //--
+                '<tr><td>Legendary Actions: </td><td>' + mon.legendary_actions.length + '</td></tr>' + //--
+                '<tr><td>Mythic Actions: </td><td>' + mon.mythic_actions.length + '</td></tr>' + //--
+                '</table>' + //--
+                '<br><br>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit">Edit Monster</a></div>' + //--
+                '</div>'
+            );
+        }
     },
 
     editMonster = function(mon,option,val1,val2,val3) {
