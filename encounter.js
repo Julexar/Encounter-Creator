@@ -34,9 +34,13 @@ API Commands (GM Only):
             --ac {Insert Numer} --type {Insert AC Type} - Sets the Monster's AC
             --hp {Insert Number} - Sets the Monster's HP
             --speed {Insert Speed} - Sets the Monster's Speed
-            --attr {Insert Attribute} --{Insert value} - Sets the Attribute of a Monster
-            --save {Insert Attribute} --{Insert value} - Sets the save bonus of a Monster
-            --skill {Insert Skill} --{Insert value} - Sets the skill bonus of a Monster
+            --attr {Insert Attribute} --{Insert value} - Edits the Attribute of a Monster
+            --save {Insert Attribute} --{Insert value} - Edits the save bonus of a Monster
+            --saveadd {Insert Attribute} --{Insert value} - Adds a save to the Monster
+            --saverem {Insert Attribute} - Removes a save from the Monster
+            --skill {Insert Skill} --{Insert value} - Edits the skill bonus of a Monster
+            --skilladd {Insert Skill} --{Insert value} - Adds a skill to the Monster
+            --skillrem {Insert Skill} - Removes a skill from the Monster
             --vul {Insert Vulnerabilities} - Sets the Monster's Damage Vulnerabilities
             --res {Insert Resistances} - Sets the Monster's Resistances
             --dmg_immune {Insert Immunities} - Sets the Monster's Immunities
@@ -172,18 +176,62 @@ var EncounterCreator = EncounterCreator || (function() {
 
     setTempDefaults = function() {
         state.temp = {
-            name:"",
-            val:0,
-            desc:"",
-            rarity:"",
-            type:"",
-            atk:false,
-            dmg:"",
-            dmgtype:"",
-            secdmg:"",
-            secdmgtype:"",
-            tohit:0,
-            magic:0,
+            item: {
+                name:"",
+                val:0,
+                desc:"",
+                rarity:"",
+                type:"",
+                atk:false,
+                dmg:"",
+                dmgtype:"",
+                secdmg:"",
+                secdmgtype:"",
+                tohit:0,
+                magic:0,
+            },
+            monster: {
+                name: "",
+                type: "",
+                ac: 10,
+                actype: "",
+                hp: 0,
+                sense: "",
+                speed: "",
+                lang: [],
+                save: [],
+                skill: [],
+                stat: {
+                    str: 0,
+                    dex: 0,
+                    con: 0,
+                    int: 0,
+                    wis: 0,
+                    cha: 0,
+                },
+                vuln: "",
+                res: "",
+                dmgimm: "",
+                condimm: "",
+                cr: 0,
+                pb: 0,
+                caster: false,
+                caster_lvl: 0,
+                spell_atk_mod: 0,
+                spell_dc_mod: 0,
+                cast_ability: "",
+                bonusact: false,
+                react: false,
+                legendary: 0,
+                mythic: false,
+                mythic_desc: "",
+                traits: [],
+                actions: [],
+                bonus_actions: [],
+                reactions: [],
+                legendary_actions: [],
+                mythic_actions: [],
+            },
         };
     },
 
@@ -208,7 +256,9 @@ var EncounterCreator = EncounterCreator || (function() {
                 actype: "",
                 hp: 0,
                 speed: "",
+                sense: "",
                 amount: 1,
+                language: ["Common"],
                 save: [
                     {
                         //Basics
@@ -560,21 +610,51 @@ var EncounterCreator = EncounterCreator || (function() {
                                     monsterMenu(monster);
                                 }
                             } else if (args[3].includes("save")) {
-                                saveattr=args[3].replace("save ","");
-                                if (!args[4]) {
-                                    sendChat("Encounter Creator","/w gm You need to define a value for the Save bonus!");
-                                } else if (args[4]) {
-                                    saveval=Number(args[4]);
-                                    editMonster(monster,"save",saveattr,saveval);
+                                if (!args[3].includes("add") || !args[3].includes("rem")) {
+                                    saveattr=args[3].replace("save ","");
+                                    if (!args[4]) {
+                                        sendChat("Encounter Creator","/w gm You need to define a value for the Save bonus!");
+                                    } else if (args[4]) {
+                                        saveval=Number(args[4]);
+                                        editMonster(monster,"save",saveattr,saveval);
+                                        monsterMenu(monster);
+                                    }
+                                } else if (args[3].includes("add")) {
+                                    saveattr=args[3].replace("saveadd ","");
+                                    if (!args[4]) {
+                                        sendChat("Encounter Creator","/w gm You need to define a value for the Save bonus!");
+                                    } else if (args[4]) {
+                                        saveval=Number(args[4]);
+                                        editMonster(monster,"saveadd",saveattr,saveval);
+                                        monsterMenu(monster);
+                                    }
+                                } else if (args[3].includes("rem")) {
+                                    saveattr=args[3].replace("saverem ","");
+                                    editMonster(monster,"saverem",saveattr);
                                     monsterMenu(monster);
                                 }
                             } else if (args[3].includes("skill")) {
-                                skill=args[3].replace("skill ","");
-                                if (!args[4]) {
-                                    sendChat("Encounter Creator","/w gm You need to define a value for the Skill bonus!");
-                                } else if (args[4]) {
-                                    saveval=Number(args[4]);
-                                    editMonster(monster,"skill",skill,skillval);
+                                if (!args[3].includes("add") && !args[3].includes("rem")) {
+                                    skill=args[3].replace("skill ","");
+                                    if (!args[4]) {
+                                        sendChat("Encounter Creator","/w gm You need to define a value for the Skill bonus!");
+                                    } else if (args[4]) {
+                                        saveval=Number(args[4]);
+                                        editMonster(monster,"skill",skill,skillval);
+                                        monsterMenu(monster);
+                                    }
+                                } else if (args[3].includes("add")) {
+                                    skill=args[3].replace("skilladd ","");
+                                    if (!args[4]) {
+                                        sendChat("Encounter Creator","/w gm You need to define a value for the Skill bonus!");
+                                    } else if (args[4]) {
+                                        saveval=Number(args[4]);
+                                        editMonster(monster,"skilladd",skill,skillval);
+                                        monsterMenu(monster);
+                                    }
+                                } else if (args[3].includes("rem")) {
+                                    skill=args[3].replace("skillrem ","");
+                                    editMonster(monster,"skillrem",skill);
                                     monsterMenu(monster);
                                 }
                             } else if (args[3].includes("vul")) {
@@ -968,6 +1048,8 @@ var EncounterCreator = EncounterCreator || (function() {
                                     removeMyth(monster,myth);
                                     mythEditor(monster,undefined);
                                 }
+                            } else if (args[3]=="confirm") {
+                                editMonster(monster,"confirm");
                             }
                         } else if (args[2]=="reset") {
                             resetMonster(monster);
@@ -1704,188 +1786,200 @@ var EncounterCreator = EncounterCreator || (function() {
         item=enc.loot.items.find(i => i.name==item);
         let name,val,desc,rare,type,atk,dmg,dmgtype,secdmg,secdmgtype,tohit,magic;
         if (!option) {
-            name=state.temp.name;
-            val=state.temp.val;
-            desc=state.temp.desc.split(';');
-            rare=state.temp.rarity;
-            type=state.temp.type;
-            atk=state.temp.atk;
-            dmg=state.temp.dmg;
-            dmgtype=state.temp.dmgtype;
-            secdmg=state.temp.secdmg;
-            secdmgtype=state.temp.secdmgtype;
-            tohit=state.temp.tohit;
-            magic=state.temp.magic;
+            state.temp.item.name=item.name;
+            state.temp.item.val=item.value;
+            state.temp.item.desc=item.desc;
+            state.temp.item.rare=item.rarity;
+            state.temp.item.type=item.type;
+            state.temp.item.atk=item.attack;
+            state.temp.item.dmg=item.damage;
+            state.temp.item.dmgtype=item.dmgtype;
+            state.temp.item.secdmg=item.secdamage;
+            state.temp.item.secdmgtype=item.secdmgtype;
+            state.temp.item.tohit=item.tohit;
+            state.temp.item.magic=item.magic;
+            name=state.temp.item.name;
+            val=state.temp.item.val;
+            desc=state.temp.item.desc.split(';');
+            rare=state.temp.item.rarity;
+            type=state.temp.item.type;
+            atk=state.temp.item.atk;
+            dmg=state.temp.item.dmg;
+            dmgtype=state.temp.item.dmgtype;
+            secdmg=state.temp.item.secdmg;
+            secdmgtype=state.temp.item.secdmgtype;
+            tohit=state.temp.item.tohit;
+            magic=state.temp.item.magic;
         } else if (option) {
             switch (option) {
                 case 'name':
                     name=val1;
-                    state.temp.name=val1;
-                    val=state.temp.val;
-                    desc=state.temp.desc.split(';');
-                    rare=state.temp.rarity;
-                    type=state.temp.type;
-                    atk=state.temp.atk;
-                    dmg=state.temp.dmg;
-                    dmgtype=state.temp.dmgtype;
-                    secdmg=state.temp.secdmg;
-                    secdmgtype=state.temp.secdmgtype;
-                    tohit=state.temp.tohit;
-                    magic=state.temp.magic;
+                    state.temp.item.name=val1;
+                    val=state.temp.item.val;
+                    desc=state.temp.item.desc.split(';');
+                    rare=state.temp.item.rarity;
+                    type=state.temp.item.type;
+                    atk=state.temp.item.atk;
+                    dmg=state.temp.item.dmg;
+                    dmgtype=state.temp.item.dmgtype;
+                    secdmg=state.temp.item.secdmg;
+                    secdmgtype=state.temp.item.secdmgtype;
+                    tohit=state.temp.item.tohit;
+                    magic=state.temp.item.magic;
                 break;
                 case 'value':
                     val=Number(val1);
-                    state.temp.val=Number(val1);
-                    name=state.temp.name;
-                    desc=state.temp.desc.split(';');
-                    rare=state.temp.rarity;
-                    type=state.temp.type;
-                    atk=state.temp.atk;
-                    dmg=state.temp.dmg;
-                    dmgtype=state.temp.dmgtype;
-                    secdmg=state.temp.secdmg;
-                    secdmgtype=state.temp.secdmgtype;
-                    tohit=state.temp.tohit;
-                    magic=state.temp.magic;
+                    state.temp.item.val=Number(val1);
+                    name=state.temp.item.name;
+                    desc=state.temp.item.desc.split(';');
+                    rare=state.temp.item.rarity;
+                    type=state.temp.item.type;
+                    atk=state.temp.item.atk;
+                    dmg=state.temp.item.dmg;
+                    dmgtype=state.temp.item.dmgtype;
+                    secdmg=state.temp.item.secdmg;
+                    secdmgtype=state.temp.item.secdmgtype;
+                    tohit=state.temp.item.tohit;
+                    magic=state.temp.item.magic;
                 break;
                 case 'desc':
                     desc=val1;
-                    state.temp.desc=val1;
-                    name=state.temp.name;
-                    val=state.temp.val;
-                    rare=state.temp.rarity;
-                    type=state.temp.type;
-                    atk=state.temp.atk;
-                    dmg=state.temp.dmg;
-                    dmgtype=state.temp.dmgtype;
-                    secdmg=state.temp.secdmg;
-                    secdmgtype=state.temp.secdmgtype;
-                    tohit=state.temp.tohit;
-                    magic=state.temp.magic;
+                    state.temp.item.desc=val1;
+                    name=state.temp.item.name;
+                    val=state.temp.item.val;
+                    rare=state.temp.item.rarity;
+                    type=state.temp.item.type;
+                    atk=state.temp.item.atk;
+                    dmg=state.temp.item.dmg;
+                    dmgtype=state.temp.item.dmgtype;
+                    secdmg=state.temp.item.secdmg;
+                    secdmgtype=state.temp.item.secdmgtype;
+                    tohit=state.temp.item.tohit;
+                    magic=state.temp.item.magic;
                 break;
                 case 'rarity':
                     rare=val1;
-                    state.temp.rarity=val1;
-                    name=state.temp.name;
-                    val=state.temp.val;
-                    desc=state.temp.desc.split(';');
-                    type=state.temp.type;
-                    atk=state.temp.atk;
-                    dmg=state.temp.dmg;
-                    dmgtype=state.temp.dmgtype;
-                    secdmg=state.temp.secdmg;
-                    secdmgtype=state.temp.secdmgtype;
-                    tohit=state.temp.tohit;
-                    magic=state.temp.magic;
+                    state.temp.item.rarity=val1;
+                    name=state.temp.item.name;
+                    val=state.temp.item.val;
+                    desc=state.temp.item.desc.split(';');
+                    type=state.temp.item.type;
+                    atk=state.temp.item.atk;
+                    dmg=state.temp.item.dmg;
+                    dmgtype=state.temp.item.dmgtype;
+                    secdmg=state.temp.item.secdmg;
+                    secdmgtype=state.temp.item.secdmgtype;
+                    tohit=state.temp.item.tohit;
+                    magic=state.temp.item.magic;
                 break;
                 case 'type':
                     type=val1;
-                    state.temp.type=val1;
-                    name=state.temp.name;
-                    val=state.temp.val;
-                    desc=state.temp.desc.split(';');
-                    rare=state.temp.rarity;
-                    type=state.temp.type;
-                    atk=state.temp.atk;
-                    dmg=state.temp.dmg;
-                    dmgtype=state.temp.dmgtype;
-                    secdmg=state.temp.secdmg;
-                    secdmgtype=state.temp.secdmgtype;
-                    tohit=state.temp.tohit;
-                    magic=state.temp.magic;
+                    state.temp.item.type=val1;
+                    name=state.temp.item.name;
+                    val=state.temp.item.val;
+                    desc=state.temp.item.desc.split(';');
+                    rare=state.temp.item.rarity;
+                    type=state.temp.item.type;
+                    atk=state.temp.item.atk;
+                    dmg=state.temp.item.dmg;
+                    dmgtype=state.temp.item.dmgtype;
+                    secdmg=state.temp.item.secdmg;
+                    secdmgtype=state.temp.item.secdmgtype;
+                    tohit=state.temp.item.tohit;
+                    magic=state.temp.item.magic;
                 break;
                 case 'attack':
                     atk=Boolean(val1);
-                    state.temp.atk=Boolean(val1);
-                    name=state.temp.name;
-                    val=state.temp.val;
-                    desc=state.temp.desc.split(';');
-                    rare=state.temp.rarity;
-                    type=state.temp.type;
-                    dmg=state.temp.dmg;
-                    dmgtype=state.temp.dmgtype;
-                    secdmg=state.temp.secdmg;
-                    secdmgtype=state.temp.secdmgtype;
-                    tohit=state.temp.tohit;
-                    magic=state.temp.magic;
+                    state.temp.item.atk=Boolean(val1);
+                    name=state.temp.item.name;
+                    val=state.temp.item.val;
+                    desc=state.temp.item.desc.split(';');
+                    rare=state.temp.item.rarity;
+                    type=state.temp.item.type;
+                    dmg=state.temp.item.dmg;
+                    dmgtype=state.temp.item.dmgtype;
+                    secdmg=state.temp.item.secdmg;
+                    secdmgtype=state.temp.item.secdmgtype;
+                    tohit=state.temp.item.tohit;
+                    magic=state.temp.item.magic;
                 break;
                 case 'damage':
                     dmg=val1;
                     dmgtype=val2;
-                    state.temp.dmg=val1;
-                    state.temp.dmgtype=val2;
-                    name=state.temp.name;
-                    val=state.temp.val;
-                    desc=state.temp.desc.split(';');
-                    rare=state.temp.rarity;
-                    type=state.temp.type;
-                    atk=state.temp.atk;
-                    secdmg=state.temp.secdmg;
-                    secdmgtype=state.temp.secdmgtype;
-                    tohit=state.temp.tohit;
-                    magic=state.temp.magic;
+                    state.temp.item.dmg=val1;
+                    state.temp.item.dmgtype=val2;
+                    name=state.temp.item.name;
+                    val=state.temp.item.val;
+                    desc=state.temp.item.desc.split(';');
+                    rare=state.temp.item.rarity;
+                    type=state.temp.item.type;
+                    atk=state.temp.item.atk;
+                    secdmg=state.temp.item.secdmg;
+                    secdmgtype=state.temp.item.secdmgtype;
+                    tohit=state.temp.item.tohit;
+                    magic=state.temp.item.magic;
                 break;
                 case 'secdamage':
                     secdmg=val1;
                     secdmgtype=val2;
-                    state.temp.secdmg=val1;
-                    state.temp.secdmgtype=val2;
-                    name=state.temp.name;
-                    val=state.temp.val;
-                    desc=state.temp.desc.split(';');
-                    rare=state.temp.rarity;
-                    type=state.temp.type;
-                    atk=state.temp.atk;
-                    dmg=state.temp.dmg;
-                    dmgtype=state.temp.dmgtype;
-                    tohit=state.temp.tohit;
-                    magic=state.temp.magic;
+                    state.temp.item.secdmg=val1;
+                    state.temp.item.secdmgtype=val2;
+                    name=state.temp.item.name;
+                    val=state.temp.item.val;
+                    desc=state.temp.item.desc.split(';');
+                    rare=state.temp.item.rarity;
+                    type=state.temp.item.type;
+                    atk=state.temp.item.atk;
+                    dmg=state.temp.item.dmg;
+                    dmgtype=state.temp.item.dmgtype;
+                    tohit=state.temp.item.tohit;
+                    magic=state.temp.item.magic;
                 break;
                 case 'tohit':
                     tohit=Number(val1);
-                    state.temp.tohit=Number(val1);
-                    name=state.temp.name;
-                    val=state.temp.val;
-                    desc=state.temp.desc.split(';');
-                    rare=state.temp.rarity;
-                    type=state.temp.type;
-                    atk=state.temp.atk;
-                    dmg=state.temp.dmg;
-                    dmgtype=state.temp.dmgtype;
-                    secdmg=state.temp.secdmg;
-                    secdmgtype=state.temp.secdmgtype;
-                    magic=state.temp.magic;
+                    state.temp.item.tohit=Number(val1);
+                    name=state.temp.item.name;
+                    val=state.temp.item.val;
+                    desc=state.temp.item.desc.split(';');
+                    rare=state.temp.item.rarity;
+                    type=state.temp.item.type;
+                    atk=state.temp.item.atk;
+                    dmg=state.temp.item.dmg;
+                    dmgtype=state.temp.item.dmgtype;
+                    secdmg=state.temp.item.secdmg;
+                    secdmgtype=state.temp.item.secdmgtype;
+                    magic=state.temp.item.magic;
                 break;
                 case 'magic':
                     magic=Number(val1);
-                    state.temp.magic=Number(val1);
-                    name=state.temp.name;
-                    val=state.temp.val;
-                    desc=state.temp.desc.split(';');
-                    rare=state.temp.rarity;
-                    type=state.temp.type;
-                    atk=state.temp.atk;
-                    dmg=state.temp.dmg;
-                    dmgtype=state.temp.dmgtype;
-                    secdmg=state.temp.secdmg;
-                    secdmgtype=state.temp.secdmgtype;
-                    tohit=state.temp.tohit;
+                    state.temp.item.magic=Number(val1);
+                    name=state.temp.item.name;
+                    val=state.temp.item.val;
+                    desc=state.temp.item.desc.split(';');
+                    rare=state.temp.item.rarity;
+                    type=state.temp.item.type;
+                    atk=state.temp.item.atk;
+                    dmg=state.temp.item.dmg;
+                    dmgtype=state.temp.item.dmgtype;
+                    secdmg=state.temp.item.secdmg;
+                    secdmgtype=state.temp.item.secdmgtype;
+                    tohit=state.temp.item.tohit;
                 break;
                 case 'confirm':
-                    item.value=state.temp.value;
-                    item.desc=state.temp.desc;
-                    item.rarity=state.temp.rarity;
-                    item.type=state.temp.type;
-                    item.attack=state.temp.atk;
-                    item.damage=state.temp.dmg;
-                    item.dmgtype=state.temp.dmgtype;
-                    item.secdamage=state.temp.secdmg;
-                    item.secdmgtype=state.temp.secdmgtype;
-                    item.tohit=state.temp.tohit;
-                    item.magic=state.temp.magic;
+                    item.value=state.temp.item.value;
+                    item.desc=state.temp.item.desc;
+                    item.rarity=state.temp.item.rarity;
+                    item.type=state.temp.item.type;
+                    item.attack=state.temp.item.atk;
+                    item.damage=state.temp.item.dmg;
+                    item.dmgtype=state.temp.item.dmgtype;
+                    item.secdamage=state.temp.item.secdmg;
+                    item.secdmgtype=state.temp.item.secdmgtype;
+                    item.tohit=state.temp.item.tohit;
+                    item.magic=state.temp.item.magic;
                     for (let i=0;i<enc.loot.items.length;i++) {
                         if (enc.loot[i].name==item.name) {
-                            item.name=state.temp.name;
+                            item.name=state.temp.item.name;
                             enc.loot[i]=item;
                         }
                     }
@@ -1894,6 +1988,18 @@ var EncounterCreator = EncounterCreator || (function() {
                             state.encounter[i]=enc;
                         }
                     }
+                    state.temp.item.name="";
+                    state.temp.item.value=0;
+                    state.temp.item.desc="";
+                    state.temp.item.rarity="";
+                    state.temp.item.type="";
+                    state.temp.item.atk=false;
+                    state.temp.item.dmg="";
+                    state.temp.item.dmgtype="";
+                    state.temp.item.secdmg="";
+                    state.temp.item.secdmgtype="";
+                    state.temp.item.tohit=0;
+                    state.temp.item.magic=0;
                     sendChat("Encounter Creator","/w gm Changes have been applied.");
                 break;
             }
@@ -2678,7 +2784,1103 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     editMonster = function(mon,option,val1,val2,val3) {
-
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 50px;';
+        var astyle4 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+        mon=state.monster.find(m => m.name==mon);
+        let name,type,ac,actype,hp,speed,sense,lang,save,skill,stat,vuln,res,dmgimm,condimm,cr,pb,caster,castlvl,spellatkmod,spelldcmod,castabil,bonusact,react,legnum,mythic,mythdesc;
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find that Monster!");
+        } else if (mon) {
+            if (!option) {
+                state.temp.monster.name=mon.name;
+                state.temp.monster.type=mon.type;
+                state.temp.monster.ac=mon.ac;
+                state.temp.monster.actype=mon.actype;
+                state.temp.monster.hp=mon.hp;
+                state.temp.monster.speed=mon.speed;
+                state.temp.monster.sense=mon.sense;
+                state.temp.monster.language=mon.language;
+                if (mon.save.length>=1) {
+                    for (let i=0;i<mon.save.length;i++) {
+                        state.temp.monster.save.push(mon.save[i]);
+                    }
+                }
+                if (mon.skill.length>=1) {
+                    for (let i=0;i<mon.skill.length;i++) {
+                        state.temp.monster.skill.push(mon.skill[i]);
+                    }
+                }
+                state.temp.monster.stat=mon.stat;
+                state.temp.monster.vuln=mon.vuln;
+                state.temp.monster.res=mon.res;
+                state.temp.monster.dmgimm=mon.dmgimm;
+                state.temp.monster.condimm=mon.condimm;
+                state.temp.monster.cr=mon.cr;
+                state.temp.monster.pb=mon.pb;
+                state.temp.monster.caster=mon.caster;
+                state.temp.monster.caster_lvl=mon.caster_lvl;
+                state.temp.monster.spell_atk_mod=mon.spell_atk_mod;
+                state.temp.monster.spell_dc_mod=mon.spell_dc_mod;
+                state.temp.monster.cast_ability=mon.cast_ability;
+                state.temp.monster.bonusact=mon.bonusact;
+                state.temp.monster.react=mon.react;
+                state.temp.monster.legendary=mon.legendary;
+                state.temp.monster.mythic=mon.mythic;
+                state.temp.monster.mythic_desc=mon.mythic_desc;
+                name=state.temp.monster.name;
+                type=state.temp.monster.type;
+                ac=state.temp.monster.ac;
+                actype=state.temp.monster.actype;
+                hp=state.temp.monster.hp;
+                speed=state.temp.monster.speed;
+                sense=state.temp.monster.sense;
+                lang=state.temp.monster.language;
+                save=state.temp.monster.save;
+                skill=state.temp.monster.skill;
+                stat=state.temp.monster.stat;
+                vuln=state.temp.monster.vuln;
+                res=state.temp.monster.res;
+                dmgimm=state.temp.monster.dmgimm;
+                condimm=state.temp.monster.condimm;
+                cr=state.temp.monster.cr;
+                pb=state.temp.monster.pb;
+                caster=state.temp.monster.caster;
+                castlvl=state.temp.monster.caster_lvl;
+                spellatkmod=state.temp.monster.spell_atk_mod;
+                spelldcmod=state.temp.monster.spell_dc_mod;
+                castabil=state.temp.monster.cast_ability;
+                bonusact=state.temp.monster.bonusact;
+                react=state.temp.monster.react;
+                legnum=state.temp.monster.legendary;
+                mythic=state.temp.monster.mythic;
+                mythdesc=state.temp.monster.mythic_desc;
+            } else if (option) {
+                switch (option) {
+                    case 'name':
+                        name=val1;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'type':
+                        type=val1;
+                        ac=state.temp.monster.ac;
+                        name=state.temp.monster.name;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'ac':
+                        ac=val1;
+                        actype=val2;
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'hp':
+                        hp=val1;
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'speed':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=val1;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'attr':
+                        stat=state.temp.monster.stat;
+                        if (val1.toLowerCase().includes("str")) {
+                            stat.str=val2;
+                        } else if (val1.toLowerCase().includes("dex")) {
+                            stat.dex=val2;
+                        } else if (val1.toLowerCase().includes("con")) {
+                            stat.con=val2;
+                        } else if (val1.toLowerCase().inlcudes("int")) {
+                            stat.int=val2;
+                        } else if (val1.toLowerCase().includes("wis")) {
+                            stat.wis=val2;
+                        } else if (val1.toLowerCase().includes("cha")) {
+                            stat.cha=val2;
+                        }
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'save':
+                        save=state.temp.monster.save;
+                        if (save.length==0) {
+                            sendChat("Encounter Creator","/w gm This Monster does not have any Saves!");
+                            return;
+                        } else if (save.length>=1) {
+                            for (let i=0;i<save.length;i++) {
+                                if (save[i].name==val1) {
+                                    save[i].val=val1;
+                                }
+                            }
+                            name=state.temp.monster.name;
+                            type=state.temp.monster.type;
+                            ac=state.temp.monster.ac;
+                            actype=state.temp.monster.actype;
+                            hp=state.temp.monster.hp;
+                            speed=state.temp.monster.speed;
+                            sense=state.temp.monster.sense;
+                            lang=state.temp.monster.language;
+                            skill=state.temp.monster.skill;
+                            stat=state.temp.monster.stat;
+                            vuln=state.temp.monster.vuln;
+                            res=state.temp.monster.res;
+                            dmgimm=state.temp.monster.dmgimm;
+                            condimm=state.temp.monster.condimm;
+                            cr=state.temp.monster.cr;
+                            pb=state.temp.monster.pb;
+                            caster=state.temp.monster.caster;
+                            castlvl=state.temp.monster.caster_lvl;
+                            spellatkmod=state.temp.monster.spell_atk_mod;
+                            spelldcmod=state.temp.monster.spell_dc_mod;
+                            castabil=state.temp.monster.cast_ability;
+                            bonusact=state.temp.monster.bonusact;
+                            react=state.temp.monster.react;
+                            legnum=state.temp.monster.legendary;
+                            mythic=state.temp.monster.mythic;
+                            mythdesc=state.temp.monster.mythic_desc;
+                        }
+                    break;
+                    case 'saveadd':
+                        save=state.temp.monster.save;
+                        save.push({
+                            name: val1,
+                            val: val2
+                        });
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'saverem':
+                        save=state.temp.monser.save;
+                        if (save.length==0) {
+                            sendChat("Encounter Creator","/w gm This Monster does not have any Saves!");
+                            return;
+                        } else if (save.length>=1) {
+                            for (let i=0;i<save.length;i++) {
+                                if (save[i].name==val1) {
+                                    save.splice(i);
+                                }
+                            }
+                            name=state.temp.monster.name;
+                            type=state.temp.monster.type;
+                            ac=state.temp.monster.ac;
+                            actype=state.temp.monster.actype;
+                            hp=state.temp.monster.hp;
+                            speed=state.temp.monster.speed;
+                            sense=state.temp.monster.sense;
+                            lang=state.temp.monster.language;
+                            skill=state.temp.monster.skill;
+                            stat=state.temp.monster.stat;
+                            vuln=state.temp.monster.vuln;
+                            res=state.temp.monster.res;
+                            dmgimm=state.temp.monster.dmgimm;
+                            condimm=state.temp.monster.condimm;
+                            cr=state.temp.monster.cr;
+                            pb=state.temp.monster.pb;
+                            caster=state.temp.monster.caster;
+                            castlvl=state.temp.monster.caster_lvl;
+                            spellatkmod=state.temp.monster.spell_atk_mod;
+                            spelldcmod=state.temp.monster.spell_dc_mod;
+                            castabil=state.temp.monster.cast_ability;
+                            bonusact=state.temp.monster.bonusact;
+                            react=state.temp.monster.react;
+                            legnum=state.temp.monster.legendary;
+                            mythic=state.temp.monster.mythic;
+                            mythdesc=state.temp.monster.mythic_desc;
+                        }
+                    break;
+                    case 'skill':
+                        skill=state.temp.monster.skill;
+                        if (skill.length==0) {
+                            sendChat("Encounter Creator","/w gm This Monster does not have any Skills!");
+                            return;
+                        } else if (skill.length>=1) {
+                            for (let i=0;i<skill.length;i++) {
+                                if (skill[i].name==val1) {
+                                    skill[i].val=val2;
+                                }
+                            }
+                            name=state.temp.monster.name;
+                            type=state.temp.monster.type;
+                            ac=state.temp.monster.ac;
+                            actype=state.temp.monster.actype;
+                            hp=state.temp.monster.hp;
+                            speed=state.temp.monster.speed;
+                            sense=state.temp.monster.sense;
+                            lang=state.temp.monster.language;
+                            save=state.temp.monster.save;
+                            stat=state.temp.monster.stat;
+                            vuln=state.temp.monster.vuln;
+                            res=state.temp.monster.res;
+                            dmgimm=state.temp.monster.dmgimm;
+                            condimm=state.temp.monster.condimm;
+                            cr=state.temp.monster.cr;
+                            pb=state.temp.monster.pb;
+                            caster=state.temp.monster.caster;
+                            castlvl=state.temp.monster.caster_lvl;
+                            spellatkmod=state.temp.monster.spell_atk_mod;
+                            spelldcmod=state.temp.monster.spell_dc_mod;
+                            castabil=state.temp.monster.cast_ability;
+                            bonusact=state.temp.monster.bonusact;
+                            react=state.temp.monster.react;
+                            legnum=state.temp.monster.legendary;
+                            mythic=state.temp.monster.mythic;
+                            mythdesc=state.temp.monster.mythic_desc;
+                        }
+                    break;
+                    case 'skilladd':
+                        skill=state.temp.monster.skill;
+                        skill.push({
+                            name: val1,
+                            val: val2
+                        });
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'skillrem':
+                        skill=state.temp.monster.skill;
+                        if (skill.length==0) {
+                            sendChat("Encounter Creator","/w gm This Monster does not have any Skills!");
+                            return;
+                        } else if (skill.length>=1) {
+                            for (let i=0;i<skill.length;i++) {
+                                if (skill[i].name==val1) {
+                                    skill.splice(i);
+                                }
+                            }
+                            name=state.temp.monster.name;
+                            type=state.temp.monster.type;
+                            ac=state.temp.monster.ac;
+                            actype=state.temp.monster.actype;
+                            hp=state.temp.monster.hp;
+                            speed=state.temp.monster.speed;
+                            sense=state.temp.monster.sense;
+                            lang=state.temp.monster.language;
+                            save=state.temp.monster.save;
+                            stat=state.temp.monster.stat;
+                            vuln=state.temp.monster.vuln;
+                            res=state.temp.monster.res;
+                            dmgimm=state.temp.monster.dmgimm;
+                            condimm=state.temp.monster.condimm;
+                            cr=state.temp.monster.cr;
+                            pb=state.temp.monster.pb;
+                            caster=state.temp.monster.caster;
+                            castlvl=state.temp.monster.caster_lvl;
+                            spellatkmod=state.temp.monster.spell_atk_mod;
+                            spelldcmod=state.temp.monster.spell_dc_mod;
+                            castabil=state.temp.monster.cast_ability;
+                            bonusact=state.temp.monster.bonusact;
+                            react=state.temp.monster.react;
+                            legnum=state.temp.monster.legendary;
+                            mythic=state.temp.monster.mythic;
+                            mythdesc=state.temp.monster.mythic_desc;
+                        }
+                    break;
+                    case 'vul':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=val1;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'res':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=val1;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'dmg_immune':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=val1;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'cond_immune':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=val1;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'sense':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=val1;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'lang':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=val1.split(",");
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'cr':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=val1;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'pb':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=val1;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'caster':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=val1;
+                        castlvl=val2;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=val3;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'spellmod':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=val1;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'spelldc':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=val1;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'ba':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=val1;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'react':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=val1;
+                        legnum=state.temp.monster.legendary;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'legendact':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=val1;
+                        mythic=state.temp.monster.mythic;
+                        mythdesc=state.temp.monster.mythic_desc;
+                    break;
+                    case 'myth':
+                        name=state.temp.monster.name;
+                        type=state.temp.monster.type;
+                        ac=state.temp.monster.ac;
+                        actype=state.temp.monster.actype;
+                        hp=state.temp.monster.hp;
+                        speed=state.temp.monster.speed;
+                        sense=state.temp.monster.sense;
+                        lang=state.temp.monster.language;
+                        save=state.temp.monster.save;
+                        skill=state.temp.monster.skill;
+                        stat=state.temp.monster.stat;
+                        vuln=state.temp.monster.vuln;
+                        res=state.temp.monster.res;
+                        dmgimm=state.temp.monster.dmgimm;
+                        condimm=state.temp.monster.condimm;
+                        cr=state.temp.monster.cr;
+                        pb=state.temp.monster.pb;
+                        caster=state.temp.monster.caster;
+                        castlvl=state.temp.monster.caster_lvl;
+                        spellatkmod=state.temp.monster.spell_atk_mod;
+                        spelldcmod=state.temp.monster.spell_dc_mod;
+                        castabil=state.temp.monster.cast_ability;
+                        bonusact=state.temp.monster.bonusact;
+                        react=state.temp.monster.react;
+                        legnum=state.temp.monster.legendary;
+                        mythic=val1;
+                        mythdesc=val2;
+                    break;
+                    case 'confirm':
+                        mon.type=state.temp.monster.type;
+                        mon.ac=state.temp.monster.ac;
+                        mon.actype=state.temp.monster.actype;
+                        mon.hp=state.temp.monster.hp;
+                        mon.speed=state.temp.monster.speed;
+                        mon.sense=state.temp.monster.sense;
+                        mon.language=state.temp.monster.language;
+                        mon.save=state.temp.monster.save;
+                        mon.skill=state.temp.monster.skill;
+                        mon.stat=state.temp.monster.stat;
+                        mon.vuln=state.temp.monster.vuln;
+                        mon.res=state.temp.monster.res;
+                        mon.dmgimm=state.temp.monster.dmgimm;
+                        mon.condimm=state.temp.monster.condimm;
+                        mon.cr=state.temp.monster.cr;
+                        mon.pb=state.temp.monster.pb;
+                        mon.caster=state.temp.monster.caster;
+                        mon.caster_lvl=state.temp.monster.caster_lvl;
+                        mon.spell_atk_mod=state.temp.monster.spell_atk_mod;
+                        mon.spell_dc_mod=state.temp.monster.spell_dc_mod;
+                        mon.cast_ability=state.temp.monster.cast_ability;
+                        mon.bonusact=state.temp.monster.bonusact;
+                        mon.react=state.temp.monster.react;
+                        mon.legendary=state.temp.monster.legendary;
+                        mon.mythic=state.temp.monster.mythic;
+                        mon.mythic_desc=state.temp.monster.mythic_desc;
+                        for (let i=0;i<state.monster.length;i++) {
+                            if (state.monster[i].name==mon.name) {
+                                mon.name=state.temp.monster.name;
+                                state.monster[i]=mon;
+                            }
+                        }
+                        state.temp.monster.name="";
+                        state.temp.monster.type="";
+                        state.temp.monster.ac=0;
+                        state.temp.monster.actype="";
+                        state.temp.monster.hp=0;
+                        state.temp.monster.speed="";
+                        state.temp.monster.save=[];
+                        state.temp.monster.stat.str=0;
+                        state.temp.monster.stat.dex=0;
+                        state.temp.monster.stat.con=0;
+                        state.temp.monster.stat.int=0;
+                        state.temp.monster.stat.wis=0;
+                        state.temp.monster.stat.cha=0;
+                        state.temp.monster.vuln="";
+                        state.temp.monster.res="";
+                        state.temp.monster.dmgimm="";
+                        state.temp.monster.condimm="";
+                        state.temp.monster.cr=0;
+                        state.temp.monster.pb=0;
+                        state.temp.monster.caster=false;
+                        state.temp.monster.caster_lvl=0;
+                        state.temp.monster.spell_atk_mod=0;
+                        state.temp.monster.spell_dc_mod=0;
+                        state.temp.monster.cast_ability="";
+                        state.temp.monster.bonusact=false;
+                        state.temp.monster.react=false;
+                        state.temp.monster.legendary=0;
+                        state.temp.monster.mythic=false;
+                        state.temp.monster.mythic_desc="";
+                    break;
+                }
+                state.temp.monster.name=name;
+                state.temp.monster.type=type;
+                state.temp.monster.ac=ac;
+                state.temp.monster.actype=actype;
+                state.temp.monster.hp=hp;
+                state.temp.monster.speed=speed;
+                state.temp.monster.save=save
+                state.temp.monster.stat=stat;
+                state.temp.monster.vuln=vuln;
+                state.temp.monster.res=res;
+                state.temp.monster.dmgimm=dmgimm;
+                state.temp.monster.condimm=condimm;
+                state.temp.monster.cr=cr;
+                state.temp.monster.pb=pb;
+                state.temp.monster.caster=caster;
+                state.temp.monster.caster_lvl=castlvl;
+                state.temp.monster.spell_atk_mod=spellatkmod;
+                state.temp.monster.spell_dc_mod=spelldcmod;
+                state.temp.monster.cast_ability=castabil;
+                state.temp.monster.bonusact=bonusact;
+                state.temp.monster.react=react;
+                state.temp.monster.legendary=legnum;
+                state.temp.monster.mythic=mythic;
+                state.temp.monster.mythic_desc=mythdesc;
+                let monList = [];
+                for (let i=0;i<state.monster.length;i++) {
+                    monList.push(state.monster[i].name);
+                }
+                let saveList=[];
+                let saves=[];
+                if (save.length==0) {
+                    saveList.push('No Saves yet...');
+                } else if (save.length>=1) {
+                    for (let i=0;i<save.length;i++) {
+                        saveList.push(save[i].name+' ('+save[i].val+')');
+                        saves.push(save[i].name);
+                    }
+                    for (let i=0;i<save.length;i++) {
+                        saveList=String(saveList).replace(",",", ");
+                        saves=String(saves).replace(",","|");
+                    }
+                }
+                let skillList=[];
+                let skills=[]
+                if (skill.length==0) {
+                    skillList.push('No Saves yet...');
+                } else if (skill.length>=1) {
+                    for (let i=0;i<skill.length;i++) {
+                        skillList.push(skill[i].name+' ('+skill[i].val+')');
+                        skills.push(skill[i].name);
+                    }
+                    for (let i=0;i<skill.length;i++) {
+                        skillList=String(skillList).replace(",",", ");
+                        skills=String(skills).replace(",","|");
+                    }
+                }
+                sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                    '<div ' + headstyle + '>Monster Editor</div>' + //--
+                    '<div ' + arrowstyle + '></div>' + //--
+                    '<div style="text-align:center;">Monster: <a ' + astyle1 + '" href="!monster --?{Monster?|' + monList + '}">' + mon.name + '</a></div>' + //--
+                    '<br><br>' + //--
+                    '<table>' + //--
+                    '<tr><td>Name: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --name ?{Name?|Insert Name}">' + name + '</a></td></tr>' + //--
+                    '<tr><td>Type: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --type ?{Type?|Insert Type}">' + type + '</a></td></tr>' + //--
+                    '<tr><td>AC: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --ac ?{AC?|10} --type ?{AC Type?|Insert Type}">' + ac + ' (' + actype + ')</a></td></tr>' + //--
+                    '<tr><td>HP: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --hp ?{HP?|0}">' + hp + '</a></td></tr>' + //--
+                    '<tr><td>Speed: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --speed ?{Speed?|30 ft.}">' + speed + '</a></td></tr>' + //--
+                    '<tr><td>Senses: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --sense ?{Senses?|Insert Senses}">' + sense + '</a></td></tr>' + //--
+                    '<tr><td>Languages: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --lang ?{Languages?|Insert Languages}">' + lang + '</a></td></tr>' + //--
+                    '<tr><td>CR: <a ' + astyle3 + '" href="!monster --' + mon.name + ' --edit --cr ?{CR?|0|0.025|0.25|0.5|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24|25|26|27|28|29|30}">' + cr + '</a></td><td>PB: <a ' + astyle3 + '" href="!monster --' + mon.name + ' --edit --pb ?{Prof. Bonus?|0}">' + pb + '</a></td></tr>' + //--
+                    '</table>' + //--
+                    '<br>' + //--
+                    '<div style="text-align:center;"><b>Stats</b></div>' + //--
+                    '<table>' + //--
+                    '<tr><td>Str: <a ' + astyle3 + '" href="!monster --' + mon.name + ' --edit --attr str --?{Value?|0}">' + stat.str + '</a></td><td>Dex: <a ' + astyle3 + '" href="!monster --' + mon.name + ' --edit --attr dex --?{Value?|0}">' + stat.dex + '</a></td><td>Con: <a ' + astyle3 + '" href="!monster --' + mon.name + ' --edit --attr con --?{Value?|0}">' + stat.con + '</a></td></tr>' + //--
+                    '<tr><td>Int: <a ' + astyle3 + '" href="!monster --' + mon.name + ' --edit --attr int --?{Value?|0}">' + stat.int + '</a></td><td>Wis: <a ' + astyle3 + '" href="!monster --' + mon.name + ' --edit --attr wis --?{Value?|0}">' + stat.wis + '</a></td><td>Cha: <a ' + astyle3 + '" href="!monster --' + mon.name + ' --edit --attr cha --?{Value?|0}">' + stat.cha + '</a></td></tr>' + //--
+                    '</table>' + //--
+                    '<br>' + //--
+                    '<div style="text-align:center;"><b>Saves</b></div>' + //--
+                    saveList + //--
+                    '<br>' + //--
+                    '<div style="text-align:center;"><b>Skills</b></div>' + //--
+                    skillList + //--
+                    '<br>' + //--
+                    '<table>' + //--
+                    '<tr><td>Has Bonus Actions: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --ba ?{Boolean?|true|false}">' + bonusact + '</a></td></tr>' + //--
+                    '<tr><td>Has Reactions: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --react ?{Boolean?|true|false}">' + react + '</a></td></tr>' + //--
+                    '<tr><td>Legendary Actions: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --legendact ?{Value?|0}">' + legnum + '</a></td></tr>' + //--
+                    '<tr><td>Has Mythic Actions: </td><td><a ' + astyle1 + '" href="!monster --' + mon.name + ' --edit --myth ?{Boolean?|true|false} --desc ?{Description?|Insert Desc}">' + mythic + '</a></td></tr>' + //--
+                    '<tr><td>Mythic Description: </td><td>' + mythdesc + '</td></tr>' + //--
+                    '</table>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --save ?{Save?|' + saves + '} --?{Value?|0}">Edit Save</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle4 + '" href="!monster --' + mon.name + ' --edit --saveadd ?{Save?|Strength|Dexterity|Constitution|Intelligence|Wisdom|Charisma} --?{Value?|0}">Add Save</a>' + //--
+                    '<a ' + astyle4 + '" href="!monster --' + mon.name + ' --edit --saverem ?{Save?|' + saves + '}">Remove Save</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --skill ?{Skill?|' + skills + '} --?{Value?|0}">Edit Skill</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle4 + '" href="!monster --' + mon.name + ' --edit --skilladd ?{Skill?|Insert Skill name} --?{Value?|0}">Add Skill</a>' + //--
+                    '<a ' + astyle4 + '" href="!monster --' + mon.name + ' --edit --skillrem ?{Skill?|' + skills + '}">Remove Skill</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --traits">Edit Traits</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --bonusactions">Edit Bonus Actions</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --actions">Edit Actions</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --reactions">Edit Reactions</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --legend_actions">Edit Legendary Actions</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + ' --edit --mythic_actions">Edit Mythic Actions</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!monster --' + mon.name + '">Go Back</a></div>' + //--
+                    '</div>'
+                );
+            }
+        }
     },
 
     createMon = function(mon) {
