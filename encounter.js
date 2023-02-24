@@ -320,7 +320,8 @@ var EncounterCreator = EncounterCreator || (function() {
                         range: "",
                         tohit: 0,
                         id: "",
-                        found: false
+                        found: false,
+                        atkfound: false
                     },
                 ],
                 bonus_actions: [
@@ -335,7 +336,8 @@ var EncounterCreator = EncounterCreator || (function() {
                         range: "",
                         tohit: 0,
                         id: "",
-                        found: false
+                        found: false,
+                        atkfound: false
                     },
                 ],
                 reactions: [
@@ -359,7 +361,8 @@ var EncounterCreator = EncounterCreator || (function() {
                         range: "",
                         tohit: 0,
                         id: "",
-                        found: false
+                        found: false,
+                        atkfound: false
                     },
                 ],
                 mythic_actions: [
@@ -374,7 +377,8 @@ var EncounterCreator = EncounterCreator || (function() {
                         range: "",
                         tohit: 0,
                         id: "",
-                        found: false
+                        found: false,
+                        atkfound: false
                     },
                 ]
             },
@@ -4011,38 +4015,75 @@ var EncounterCreator = EncounterCreator || (function() {
                     _type: 'attribute',
                     _characterid: mon.id,
                 });
-                if (!ba) {
-                    return;
-                } else if (ba) {
-                    _.each(ba, function(object) {
-                        let name = object.get('name');
-                        if (name.includes("repeating_npcbonusaction_") && name.includes("name")) {
-                            let val = object.get('current');
-                            for (let i=0;i<mon.bonus_actions.length;i++) {
-                                if (val==mon.bonus_actions[i].name) {
-                                    mon.bonus_actions[i].found=true;
+                _.each(ba, function(object) {
+                    let name = object.get('name');
+                    if (name.includes("repeating_npcbonusaction_") && name.includes("name")) {
+                        let val = object.get('current');
+                        for (let i=0;i<mon.bonus_actions.length;i++) {
+                            if (val==mon.bonus_actions[i].name) {
+                                if (mon.bonus_actions[i].id=="") {
+                                    let id = name.replace("repeating_npcbonusaction_","").replace("_name","");
+                                    mon.bonus_actions[i].id=id;
                                 }
-                            }
-                        }
-                    });
-                    for (let i=0;i<mon.bonus_actions.length;i++) {
-                        if (mon.bonus_actions[i].found==false) {
-                            let bonus = mon.bonus_actions[i];
-                            if (bonus.attack==true) {
-                                sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npcbonusaction_-CREATE_name|${bonus.name} --repeating_npcbonusaction_-CREATE_description|${bonus.desc} --repeating_npcbonusaction_-CREATE_attack_flag|on --repeating_npcbonusaction_-CREATE_attack_range|${bonus.range} --repeating_npcbonusaction_-CREATE_attack_tohit|${bonus.tohit} --repeating_npcbonusaction_-CREATE_attack_type|${bonus.atktype} --repeating_npcbonusaction_-CREATE_attack_damage|${bonus.damage} --repeating_npcbonusaction_-CREATE_attack_damagetype|${bonus.dmgtype}`);
-                            } else if (bonus.attack==false) {
-                                sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npcbonusaction_-CREATE_name|${bonus.name} --repeating_npcbonusaction_-CREATE_description|${bonus.desc} --repeating_npcbonusaction_-CREATE_attack_flag|0`);
-                            }
-                        } else if (mon.bonus_actions[i].found==true) {
-                            let bonus = mon.bonus_action[i];
-                            if (bonus.attack==true) {
-                                sendChat("Encounter Creator",`!modattr --charid ${mon.id} --repeating_npcbonusaction_${bonus.id}_name|${bonus.name} --repeating_npcbonusaction_${bonus.id}_description|${bonus.desc} --repeating_npcbonusaction_${bonus.id}_attack_flag|on --repeating_npcbonusaction_${bonus.id}_attack_range|${bonus.range} --repeating_npcbonusaction_${bonus.id}_attack_tohit|${bonus.tohit} --repeating_npcbonusaction_${bonus.id}_attack_type|${bonus.atktype} --repeating_npcbonusaction_${bonus.id}_attack_damage|${bonus.damage} --repeating_npcbonusaction_${bonus.id}_attack_damagetype|${bonus.dmgtype}`);
-                            } else if (bonus.attack==false) {
-                                sendChat("Encounter Creator",`!modattr --charid ${mon.id} --repeating_npcbonusaction_${bonus.id}_name|${bonus.name} --repeating_npcbonusaction_${bonus.id}_description|${bonus.desc} --repeating_npcbonusaction_${bonus.id}_attack_flag|0`);
+                                mon.bonus_actions[i].found=true;
                             }
                         }
                     }
+                });
+                for (let i=0;i<mon.bonus_actions.length;i++) {
+                    let bonus = mon.bonus_actions[i];
+                    ba = findObjs({
+                        _type: 'attribute',
+                        _characterid: mon.id,
+                        name: `repeating_npcbonusaction_${bonus.id}_attack_range`,
+                    }, {caseInsensitive: true})[0];
+                    if (ba) {
+                        mon.bonus_actions[i].atkfound=true;
+                    }
                 }
+                for (let i=0;i<mon.bonus_actions.length;i++) {
+                    if (mon.bonus_actions[i].found==false) {
+                        let bonus = mon.bonus_actions[i];
+                        if (bonus.attack==true) {
+                            sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npcbonusaction_-CREATE_name|${bonus.name} --repeating_npcbonusaction_-CREATE_description|${bonus.desc} --repeating_npcbonusaction_-CREATE_attack_flag|on --repeating_npcbonusaction_-CREATE_attack_range|${bonus.range} --repeating_npcbonusaction_-CREATE_attack_tohit|${bonus.tohit} --repeating_npcbonusaction_-CREATE_attack_type|${bonus.atktype} --repeating_npcbonusaction_-CREATE_attack_damage|${bonus.damage} --repeating_npcbonusaction_-CREATE_attack_damagetype|${bonus.dmgtype}`);
+                        } else if (bonus.attack==false) {
+                            sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npcbonusaction_-CREATE_name|${bonus.name} --repeating_npcbonusaction_-CREATE_description|${bonus.desc} --repeating_npcbonusaction_-CREATE_attack_flag|0`);
+                        }
+                    } else if (mon.bonus_actions[i].found==true) {
+                        let bonus = mon.bonus_action[i];
+                        if (bonus.attack==true) {
+                            if (bonus.atkfound==false) {
+                                sendChat("Encounter Creator",`!modattr --charid ${mon.id} --repeating_npcbonusaction_${bonus.id}_name|${bonus.name} --repeating_npcbonusaction_${bonus.id}_description|${bonus.desc} --repeating_npcbonusaction_${bonus.id}_attack_flag|on`);
+                                sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npcbonusaction_${bonus.id}_attack_range|${bonus.range} --repeating_npcbonusaction_${bonus.id}_attack_tohit|${bonus.tohit} --repeating_npcbonusaction_${bonus.id}_attack_type|${bonus.type} --repeating_npcbonusaction_${bonus.id}_attack_damage|${bonus.damage} --repeating_npcbonusaction_${bonus.id}_attack_damagetype|${bonus.dmgtype}`);
+                            } else if (bonus.atkfound==true) {
+                                sendChat("Encounter Creator",`!modattr --charid ${mon.id} --repeating_npcbonusaction_${bonus.id}_name|${bonus.name} --repeating_npcbonusaction_${bonus.id}_description|${bonus.desc} --repeating_npcbonusaction_${bonus.id}_attack_flag|on --repeating_npcbonusaction_${bonus.id}_attack_range|${bonus.range} --repeating_npcbonusaction_${bonus.id}_attack_tohit|${bonus.tohit} --repeating_npcbonusaction_${bonus.id}_attack_type|${bonus.atktype} --repeating_npcbonusaction_${bonus.id}_attack_damage|${bonus.damage} --repeating_npcbonusaction_${bonus.id}_attack_damagetype|${bonus.dmgtype}`);
+                            }
+                        } else if (bonus.attack==false) {
+                            sendChat("Encounter Creator",`!modattr --charid ${mon.id} --repeating_npcbonusaction_${bonus.id}_name|${bonus.name} --repeating_npcbonusaction_${bonus.id}_description|${bonus.desc} --repeating_npcbonusaction_${bonus.id}_attack_flag|0`);
+                        }
+                    }
+                }
+                ba = findObjs({
+                    _type: 'attribute',
+                    _characterid: mon.id,
+                });
+                _.each(ba, function(object) {
+                    let name = object.get('name');
+                    if (name.includes("repeating_npcbonusaction") && name.includes("name")) {
+                        let val = object.get('current');
+                        for (let i=0;i<mon.bonus_actions.length;i++) {
+                            if (val==mon.bonus_actions[i].name) {
+                                if (mon.bonus_actions[i].id=="") {
+                                    if (mon.bonus_actions[i].id=="") {
+                                        let id = name.replace("repeating_npcbonusaction_","").replace("_name","");
+                                        mon.bonus_actions[i].id=id;
+                                    }
+                                    mon.bonus_actions[i].found=true
+                                }
+                            }
+                        }
+                    }
+                });
             } else if (mon.bonusact==false) {
                 sendChat("Encounter Creator",`!modattr --charid ${mon.id} --npcbonusactionflag|0`);
             }
@@ -4057,8 +4098,11 @@ var EncounterCreator = EncounterCreator || (function() {
                     if (name.includes("repeating_npcreaction_") && name.includes("name")) {
                         let val = object.get('current');
                         for (let i=0;i<mon.reactions.length;i++) {
-                            let reaction = mon.reactions[i];
-                            if (val==reaction.name) {
+                            if (val==mon.reactions[i].name) {
+                                if (mon.reactions[i].id=="") {
+                                    let id = name.replace("repeating_npcreaction_","").replace("_name","");
+                                    mon.reactions[i].id=id;
+                                }
                                 mon.reactions[i].found=true;
                             }
                         }
@@ -4082,8 +4126,11 @@ var EncounterCreator = EncounterCreator || (function() {
                         let val = object.get('current');
                         for (let i=0;i<mon.reactions.length;i++) {
                             if (mon.reactions[i].name==val) {
-                                let id = name.replace("repeating_npcreaction_","").replace("_name","");
-                                mon.reactions[i].id=id;
+                                if (mon.reactions[i].id=="") {
+                                    let id = name.replace("repeating_npcreaction_","").replace("_name","");
+                                    mon.reactions[i].id=id;
+                                }
+                                mon.reactions[i].found=true;
                             }
                         }
                     }
@@ -4101,6 +4148,10 @@ var EncounterCreator = EncounterCreator || (function() {
                     let val = object.get('current');
                     for (let i=0;i<mon.actions.length;i++) {
                         if (val==mon.actions[i].name) {
+                            if (mon.actions[i].id=="") {
+                                let id = name.replace("repeating_npcaction_","").replace("_name","");
+                                mon.actions[i].id=id;
+                            }
                             mon.actions[i].found=true;
                         }
                     }
@@ -4108,20 +4159,249 @@ var EncounterCreator = EncounterCreator || (function() {
             });
             for (let i=0;i<mon.actions.length;i++) {
                 let act = mon.actions[i];
+                acts = findObjs({
+                    _type: 'attribute',
+                    _characterid: mon.id,
+                    name: `repeating_npcaction_${act.id}_attack_range`,
+                }, {caseInsensitive: true})[0];
+                if (acts) {
+                    mon.actions[i].atkfound=true;
+                }
+            }
+            for (let i=0;i<mon.actions.length;i++) {
+                let act = mon.actions[i];
                 if (act.found==false) {
                     if (act.attack==true) {
-                        sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npcaction_-CREATE_name|${act.name} --repeating_npcaction_-CREATE_description|${act.desc} --repeating_npcaction_-CREATE_attack_flag|on --repeating_npcaction_-CREATE_attack_range|${act.range} --repeating_npcaction_-CREATE_attack_tohit|${act.tohit} --repeating_npcaction_-CREATE_attack_type|${act.type} --repeating_npcaction_-CREATE_attack_damage|${act.damage} --repeating_npcaction_-CREATE_attack_damagetype|${act.dmgtype}`)
+                        sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npcaction_-CREATE_name|${act.name} --repeating_npcaction_-CREATE_description|${act.desc} --repeating_npcaction_-CREATE_attack_flag|on --repeating_npcaction_-CREATE_attack_range|${act.range} --repeating_npcaction_-CREATE_attack_tohit|${act.tohit} --repeating_npcaction_-CREATE_attack_type|${act.type} --repeating_npcaction_-CREATE_attack_damage|${act.damage} --repeating_npcaction_-CREATE_attack_damagetype|${act.dmgtype}`);
                     } else if (act.attack==false) {
-
+                        sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npcaction_-CREATE_name|${act.name} --repeating_npcaction_-CREATE_description|${act.desc} --repeating_npcaction_-CREATE_attack_flag|0`);
                     }
                 } else if (act.found==true) {
                     if (act.attack==true) {
-
+                        if (act.atkfound==false) {
+                            sendChat("Encounter Creator",`!modattr --charid ${mon.id} --repeating_npcaction_${act.id}_name|${act.name} --repeating_npcaction_${act.id}_description|${act.desc} --repeating_npcaction_${act.id}_attack_flag|on`);
+                            sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npcaction_${act.id}_attack_range|${act.range} --repeating_npcaction_${act.id}_attack_tohit|${act.tohit} --repeating_npcaction_${act.id}_attack_type|${act.type} --repeating_npcaction_${act.id}_attack_damage|${act.damage} --repeating_npcaction_${act.id}_attack_damagetype|${act.dmgtype}`);
+                        } else if (act.atkfound==true) {
+                            sendChat("Encounter Creator",`!modattr --charid ${mon.id} --repeating_npcaction_${act.id}_name|${act.name} --repeating_npcaction_${act.id}_description|${act.desc} --repeating_npcaction_${act.id}_attack_flag|on --repeating_npcaction_${act.id}_attack_range|${act.range} --repeating_npcaction_${act.id}_attack_tohit|${act.tohit} --repeating_npcaction_${act.id}_attack_type|${act.type} --repeating_npcaction_${act.id}_attack_damage|${act.damage} --repeating_npcaction_${act.id}_attack_damagetype|${act.dmgtype}`);
+                        }
                     } else if (act.attack==false) {
-
+                        sendChat("Encounter Creator",`!modattr --charid ${mon.id} --repeating_npcaction_${act.id}_name|${act.name} --repeating_npcaction_${act.id}_description|${act.desc} --repeating_npcaction_${act.id}_attack_flag|0`);
                     }
                 }
             }
+            acts = findObjs({
+                _type: 'attribute',
+                _characterid: mon.id,
+            });
+            _.each(acts, function(object) {
+                let name = object.get('name');
+                if (name.includes("repeating_npcaction_") && name.includes("name")) {
+                    let val = object.get('current');
+                    for (let i=0;i<mon.actions.length;i++) {
+                        if (mon.actions[i].name==val) {
+                            if (mon.actions[i].id=="") {
+                                let id = name.replace("repeating_npcaction_","").replace("_name","");
+                                mon.actions[i].id=id;
+                            }
+                            mon.actions[i].found=true;
+                        }
+                    }
+                }
+            });
+            let traits = findObjs({
+                _type: 'attribute',
+                _characterid: mon.id,
+            });
+            _.each(traits, function(object) {
+                let name = object.get('name');
+                if (name.includes("repeating_npctrait") && name.includes("name")) {
+                    let val = object.get('current');
+                    for (let i=0;i<mon.traits.length;i++) {
+                        if (val==mon.traits[i].name) {
+                            if (mon.traits[i].id=="") {
+                                let id = name.replace("repeating_npctrait_","").replace("_name","");
+                                mon.traits[i].id=id;
+                            }
+                            mon.traits[i].found=true;
+                        }
+                    }
+                }
+            });
+            for (let i=0;i<mon.traits.length;i++) {
+                let trait = mon.traits[i];
+                if (trait.found==false) {
+                    sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npctrait_-CREATE_name|${trait.name} --repeating_npctrait_-CREATE_description|${trait.desc}`);
+                } else if (trait.found==true) {
+                    sendChat("Encounter Creator",`!modattr --charid ${mon.id} --repeating_npctrait_${trait.id}_name|${trait.name} --repeating_npctrait_${trait.id}_description|${trait.desc}`);
+                }
+            }
+            traits = findObjs({
+                _type: 'attribute',
+                _characterid: mon.id,
+            });
+            _.each(traits, function(object) {
+                let name = object.get('name');
+                if (name.includes("repeating_npctrait") && name.includes("name")) {
+                    let val = object.get('current');
+                    for (let i=0;i<mon.traits.length;i++) {
+                        if (mon.traits[i].name==val) {
+                            if (mon.traits[i].id=="") {
+                                let id = name.replace("repeating_npctrait_","").replace("_name","");
+                                mon.traits[i].id=id;
+                            }
+                            mon.traits[i].found=true;
+                        }
+                    }
+                }
+            });
+            let legs = findObjs({
+                _type: 'attribute',
+                _characterid: mon.id,
+            });
+            _.each(legs, function(object) {
+                let name = object.get('name');
+                if (name.includes("repeating_npcaction-l")) {
+                    if (name.includes("name")) {
+                        let val = object.get('current');
+                        for (let i=0;i<mon.legendary_actions.length;i++) {
+                            if (val==mon.legendary_actions[i].name) {
+                                if (mon.legendary_actions[i].id=="") {
+                                    let id = name.replace("repeating_npcaction-l_","").replace("_name");
+                                    mon.legendary_actions[i].id=id;
+                                }
+                                mon.legendary_actions[i].found=true;
+                            }
+                        }
+                    } 
+                }
+            });
+            for (let i=0;i<mon.legendary_actions.length;i++) {
+                let leg = mon.legendary_actions[i];
+                legs = findObjs({
+                    _type: 'attribute',
+                    _characterid: mon.id,
+                    name: `repeating_npcaction-l_${leg.id}_attack_range`
+                }, {caseInsensitive: true})[0];
+                if (legs) {
+                    mon.legendary_actions[i].atkfound=true;
+                }
+            }
+            for (let i=0;i<mon.legendary_actions.length;i++) {
+                let leg = mon.legendary_actions[i];
+                if (leg.found==false) {
+                    if (leg.attack==true) {
+                        sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npcaction-l_-CREATE_name|${leg.name} --repeating_npcaction-l_-CREATE_description|${leg.desc} --repeating_npcaction-l_-CREATE_attack_flag|on --repeating_npcaction-l_-CREATE_attack_range|${leg.range} --repeating_npcaction-l_-CREATE_attack_tohit|${leg.tohit} --repeating_npcaction-l_-CREATE_attack_type|${leg.type} --repeating_npcaction-l_-CREATE_attack_damage|${leg.damage} --repeating_npcaction-l_-CREATE_attack_damagetype|${leg.dmgtype}`);
+                    } else if (leg.attack==false) {
+                        sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npcaction-l_-CREATE_name|${leg.name} --repeating_npcaction-l_-CREATE_description|${leg.desc} --repeating_npcaction-l_-CREATE_attack_flag|0`);
+                    }
+                } else if (leg.found==true) {
+                    if (leg.attack==true) {
+                        if (leg.atkfound==false) {
+                            sendChat("Encounter Creator",`!modattr --charid ${mon.id} --repeating_npcaction-l_${leg.id}_name|${leg.name} --repeating_npcaction-l_${leg.id}_description|${leg.desc} --repeating_npcaction-l_${leg.id}_attack_flag|on`);
+                            sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npcaction-l_${leg.id}_attack_range|${leg.range} --repeating_npcaction-l_${leg.id}_attack_tohit|${leg.tohit} --repeating_npcaction-l_${leg.id}_attack_type|${leg.type} --repeating_npcaction-l_${leg.id}_attack_damage|${leg.damage} --repeating_npcaction-l_${leg.id}_attack_damagetype|${leg.dmgtype}`);
+                        } else if (leg.atkfound==true) {
+                            sendChat("Encounter Creator",`!modattr --charid ${mon.id} --repeating_npcaction-l_${leg.id}_name|${leg.name} --repeating_npcaction-l_${leg.id}_description|${leg.desc} --repeating_npcaction-l_${leg.id}_attack_flag|on --repeating_npcaction-l_${leg.id}_attack_range|${leg.range} --repeating_npcaction-l_${leg.id}_attack_tohit|${leg.tohit} --repeating_npcaction-l_${leg.id}_attack_type|${leg.type} --repeating_npcaction-l_${leg.id}_attack_damage|${leg.damage} --repeating_npcaction-l_${leg.id}_attack_damagetype|${leg.dmgtype}`);
+                        }
+                    } else if (leg.attack==false) {
+                        sendChat("Encounter Creator",`!modattr --charid ${mon.id} --repeating_npcaction-l_${leg.id}_name|${leg.name} --repeating_npcaction-l_${leg.id}_description|${leg.desc} --repeating_npcaction-l_${leg.id}_attack_flag|0`);
+                    }
+                }
+            }
+            legs = findObjs({
+                _type: 'attribute',
+                _characterid: mon.id,
+            });
+            _.each(legs, function(object) {
+                let name = object.get('name');
+                if (name.includes("repeating_npcaction-l") && name.includes("name")) {
+                    let val = object.get('current');
+                    for (let i=0;i<mon.legendary_actions.length;i++) {
+                        if (val==mon.legendary_actions[i].name) {
+                            if (mon.legendary_actions[i].id=="") {
+                                let id = name.replace("repeating_npcaction-l_","").replace("_name","");
+                                mon.legendary_actions[i].id=id;
+                            }
+                            mon.legendary_actions[i].found=true;
+                        }
+                    }
+                }
+            });
+            let myths = findObjs({
+                _type: 'attribute',
+                _characterid: mon.id,
+            });
+            _.each(myths, function(object) {
+                let name = object.get('name');
+                if (name.includes("repeating_npcaction-m") && name.includes("name")) {
+                    let val = object.get('current');
+                    for (let i=0;i<mon.mythic_actions.length;i++) {
+                        if (val==mon.mythic_actions[i].name) {
+                            if (mon.mythic_actions[i].id=="") {
+                                let id = name.replace("repeating_npcaction-m_","").replace("_name","");
+                                mon.mythic_actions[i].id=id;
+                            }
+                            mon.mythic_actions[i].found=true;
+                        }
+                    }
+                }
+            });
+            for (let i=0;i<mon.mythic_actions.length;i++) {
+                let myth = mon.mythic_actions[i];
+                myths = finsObjs({
+                    _type: 'attribute',
+                    _characterid: mon.id,
+                    name: `repeating_npcaction-m_${myth.id}_attack_range`,
+                }, {caseInsensitive: true})[0];
+                if (myths) {
+                    mon.mythic_actions[i].atkfound=true;
+                }
+            }
+            for (let i=0;i<mon.mythic_actions.length;i++) {
+                let myth = mon.mythic_actions[i];
+                if (myth.found==false) {
+                    if (myth.attack==true) {
+                        sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npcaction-m_-CREATE_name|${myth.name} --repeating_npcaction-m_-CREATE_description|${myth.desc} --repeating_npcaction-m_-CREATE_attack_flag|on --repeating_npcaction-m_-CREATE_attack_range|${myth.range} --repeating_npcaction-m_-CREATE_attack_tohit|${myth.tohit} --repeating_npcaction-m_-CREATE_attack_type|${myth.type} --repeating_npcaction-m_-CREATE_attack_damage|${myth.damage} --repeating_npcaction-m_-CREATE_attack_damagetype|${myth.dmgtype}`);
+                    } else if (myth.attack==false) {
+                        sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npcaction-m_-CREATE_name|${myth.name} --repeating_npcaction-m_-CREATE_description|${myth.desc} --repeating_npcaction-m_-CREATE_attack_flag|0`);
+                    }
+                } else if (myth.found==true) {
+                    if (myth.attack==true) {
+                        if (myth.atkfound==false) {
+                            sendChat("Encounter Creator",`!modattr --charid ${mon.id} --repeating_npcaction-m_${myth.id}_name|${myth.name} --repeating_npcaction-m_${myth.id}_description|${myth.desc} --repeating_npcaction-m_${myth.id}_attack_flag|on`);
+                            sendChat("Encounter Creator",`!setattr --charid ${mon.id} --repeating_npcaction-m_${myth.id}_attack_range|${myth.range} --repeating_npcaction-m_${myth.id}_attack_tohit|${myth.tohit} --repeating_npcaction-m_${myth.id}_attack_type|${myth.type} --repeating_npcaction-m_${myth.id}_attack_damage|${myth.damage} --repeating_npcaction-m_${myth.id}_attack_damagetype|${myth.dmgtype}`);
+                        } else if (myth.atkfound==true) {
+                            sendChat("Encounter Creator",`!modattr --charid ${mon.id} --repeating_npcaction-m_${myth.id}_name|${myth.name} --repeating_npcaction-m_${myth.id}_description|${myth.desc} --repeating_npcaction-m_${myth.id}_attack_flag|on --repeating_npcaction-m_${myth.id}_attack_range|${myth.range} --repeating_npcaction-m_${myth.id}_attack_tohit|${myth.tohit} --repeating_npcaction-m_${myth.id}_attack_type|${myth.type} --repeating_npcaction-m_${myth.id}_attack_damage|${myth.damage} --repeating_npcaction-m_${myth.id}_attack_damagetype|${myth.dmgtype}`);
+                        }
+                    } else if (myth.attack==false) {
+                        sendChat("Encounter Creator",`!modattr --charid ${mon.id} --repeating_npcaction-m_${myth.id}_name|${myth.name} --repeating_npcaction-m_${myth.id}_description|${myth.desc} --repeating_npcaction-m_${myth.id}_attack_flag|0`);
+                    }
+                }
+            }
+            myths = findObjs({
+                _type: 'attribute',
+                _characterid: mon.id,
+            });
+            _.each(myths, function(object) {
+                let name = object.get('name');
+                if (name.includes("repeating_npcaction-m") && name.includes("name")) {
+                    let val = object.get('current');
+                    for (let i=0;i<mon.mythic_actions.length;i++) {
+                        if (val==mon.mythic_actions[i].name) {
+                            if (mon.mythic_actions[i].id=="") {
+                                let id = name.replace("repeating_npcaction-m_","").replace("_name","");
+                                mon.mythic_actions[i].id=id;
+                            }
+                            mon.mythic_actions[i].found=true;
+                        }
+                    }
+                }
+            });
+            for (let i=0;i<state.monster.length;i++) {
+                if (state.monster[i].name==mon.name) {
+                    state.monster[i]=mon;
+                }
+            }
+            sendChat("Encounter Creator",`/w gm Monster \"${mon.name}\" has been updated!`);
         }
     },
 
@@ -4372,7 +4652,58 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     editBA = function(mon,ba,option,val1,val2,val3) {
-        
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that Name!");
+        } else if (mon) {
+            ba=mon.bonus_actions.find(b => b.name==ba);
+            if (!ba) {
+                sendChat("Encounter Creator","/w gm Could not find a Bonus Action with that Name!");
+            } else if (ba) {
+                switch (option) {
+                    case 'name':
+                        for (let i=0;i<mon.bonus_actions.length;i++) {
+                            if (mon.bonus_actions[i].name==ba.name) {
+                                mon.bonus_actions[i].name=val1;
+                                ba.name=val1;
+                            }
+                        }
+                    break;
+                    case 'desc':
+                        if (val1!="" && val1!=" ") {
+                            ba.desc=desc;
+                        }
+                    break;
+                    case 'atk':
+                        ba.attack=Boolean(val1);
+                    break;
+                    case 'dmg':
+                        ba.damage=val1;
+                        ba.dmgtype=val2;
+                    break;
+                    case 'tohit':
+                        ba.tohit=Number(val1);
+                    break;
+                    case 'range':
+                        ba.range=val1;
+                    break;
+                    case 'atktype':
+                        ba.type=val1
+                    break;
+                }
+                for (let i=0;i<mon.bonus_actions.length;i++) {
+                    if (mon.bonus_actions[i].name==ba.name) {
+                        mon.bonus_actions[i]=ba;
+                    }
+                }
+                for (let i=0;i<state.monster.length;i++) {
+                    if (state.monster[i].name==mon.name) {
+                        state.monster[i]=mon;
+                    }
+                }
+                sendChat("Encounter Creator","/w gm Bonus Action has been edited!");
+            }
+        }
     },
 
     actEditor = function(mon,act) {
@@ -4495,7 +4826,56 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     editAct = function(mon,act,option,val1,val2,val3) {
-
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator",`/w gm Could not find a Monster with that Name!`);
+        } else if (mon) {
+            act=mon.actions.find(a => a.name==act);
+            if (!act) {
+                sendChat("Encounter Creator","/w gm Could not find an Action with that Name!");
+            } else if (act) {
+                switch (option) {
+                    case 'name':
+                        for (let i=0;i<mon.actions.length;i++) {
+                            if (mon.actions[i].name==act.name) {
+                                act.name=val1;
+                                mon.actions[i].name=act.name;
+                            }
+                        }
+                    break;
+                    case 'desc':
+                        act.desc=val1;
+                    break;
+                    case 'atk':
+                        act.attack=Boolean(val1);
+                    break;
+                    case 'dmg':
+                        act.damage=val1;
+                        act.dmgtype=val2;
+                    break;
+                    case 'tohit':
+                        act.tohit=Number(val1);
+                    break;
+                    case 'range':
+                        act.range=val1;
+                    break;
+                    case 'atktype':
+                        act.type=val1;
+                    break;
+                }
+                for (let i=0;i<mon.actions.length;i++) {
+                    if (mon.actions[i].name==act.name) {
+                        mon.actions[i]=act;
+                    }
+                }
+                for (let i=0;i<state.monster.length;i++) {
+                    if (state.monster[i].name==mon.name) {
+                        state.monster[i]=mon;
+                    }
+                }
+                sendChat("Encounter Creator","/w gm Action has been edited!");
+            }
+        }
     },
 
     reactEditor = function(mon,react) {
@@ -4591,7 +4971,40 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     editReact = function(mon,react,option,val) {
-
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that Name!");
+        } else if (mon) {
+            react=mon.reactions.find(r => r.name==react);
+            if (!react) {
+                sendChat("Encounter Creator","/w gm Could not find a Reaction with that Name!");
+            } else if (react) {
+                switch (option) {
+                    case 'name':
+                        for (let i=0;i<mon.reactions.length;i++) {
+                            if (mon.reactions[i].name==react.name) {
+                                react.name=val;
+                                mon.reactions[i].name=val;
+                            }
+                        }
+                    break;
+                    case 'desc':
+                        react.desc=val;
+                    break;
+                }
+                for (let i=0;i<mon.reactions.length;i++) {
+                    if (mon.reactions[i].name==react.name) {
+                        mon.reactions[i]=react;
+                    }
+                }
+                for (let i=0;i<state.monster.length;i++) {
+                    if (state.monster[i].name==mon.name) {
+                        state.monster[i]=mon;
+                    }
+                }
+                sendChat("Encounter Creator","/w gm Reaction has been edited!");
+            }
+        }
     },
 
     legEditor = function(mon,leg) {
@@ -4712,7 +5125,56 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     editLeg = function(mon,leg,option,val1,val2,val3) {
-
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that Name!");
+        } else if (mon) {
+            leg=mon.legendary_actions.find(l => l.name==leg);
+            if (!leg) {
+                sendChat("Encounter Creator","/w gm Could not find a Legendary Action with that Name!");
+            } else if (leg) {
+                switch (option) {
+                    case 'name':
+                        for (let i=0;i<mon.legendary_actions.length;i++) {
+                            if (mon.legendary_actions[i].name==leg.name) {
+                                leg.name=val1;
+                                mon.legendary_actions[i].name=val1;
+                            }
+                        }
+                    break;
+                    case 'desc':
+                        leg.desc=val1;
+                    break;
+                    case 'atk':
+                        leg.attack=Boolean(val1);
+                    break;
+                    case 'dmg':
+                        leg.damage=val1;
+                        leg.dmgtype=val2;
+                    break;
+                    case 'tohit':
+                        leg.tohit=Number(val1);
+                    break;
+                    case 'range':
+                        leg.range=val1;
+                    break;
+                    case 'atktype':
+                        leg.type=val1;
+                    break;
+                }
+                for (let i=0;i<mon.legendary_actions.length;i++) {
+                    if (mon.legendary_actions[i].name==leg.name) {
+                        mon.legendary_actions[i]=leg;
+                    }
+                }
+                for (let i=0;i<state.monster.length;i++) {
+                    if (state.monster[i].name==mon.name) {
+                        state.monster[i]=mon;
+                    }
+                }
+                sendChat("Encounter Creator","/w gm Legendary Action has been edited!");
+            }
+        }
     },
 
     mythEditor = function(mon,myth) {
@@ -4831,7 +5293,45 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     editMyth = function(mon,myth,option,val1,val2,val3) {
-
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that Name!");
+        } else if (mon) {
+            myth=mon.mythic_actions.find(m => m.name==myth);
+            if (!myth) {
+                sendChat("Encounter Creator","/w gm Could not find a Mythic Action with that Name!");
+            } else if (myth) {
+                switch (option) {
+                    case 'name':
+                        for (let i=0;i<mon.mythic_actions.length;i++) {
+                            if (mon.mythic_actions[i].name==myth.name) {
+                                myth.name=val1;
+                                mon.mythic_actions[i].name=val1;
+                            }
+                        }
+                    break;
+                    case 'desc':
+                        myth.desc=val1;
+                    break;
+                    case 'atk':
+                        myth.attack=Boolean(val1);
+                    break;
+                    case 'dmg':
+                        myth.damage=val1;
+                        myth.dmgtype=val2;
+                    break;
+                    case 'tohit':
+                        myth.tohit=Number(val1);
+                    break;
+                    case 'range':
+                        myth.range=val1;
+                    break;
+                    case 'atktype':
+                        myth.type=val1;
+                    break;
+                }
+            }
+        }
     },
 
     createAct = function(mon,act) {
@@ -4877,7 +5377,9 @@ var EncounterCreator = EncounterCreator || (function() {
                                 dmgtype: "",
                                 range: "",
                                 tohit: 0,
-                                id: actid
+                                id: actid,
+                                found: false,
+                                atkfound: false
                             }
                         );
                         sendChat("Encounter Creator","/w gm Created Action with the Name \"" + act + "\".\n\nID: " + actid);
@@ -4981,7 +5483,9 @@ var EncounterCreator = EncounterCreator || (function() {
                                 dmgtype: "",
                                 range: "",
                                 tohit: 0,
-                                id: baid
+                                id: baid,
+                                found: false,
+                                atkfound: false
                             }
                         );
                         sendChat("Encounter Creator","/w gm Created Bonus Action with the Name \"" + ba + "\".\n\nID: " + baid);
@@ -5085,7 +5589,9 @@ var EncounterCreator = EncounterCreator || (function() {
                                 dmgtype: "",
                                 range: "",
                                 tohit: 0,
-                                id: legid
+                                id: legid,
+                                found: false,
+                                atkfound: false
                             }
                         );
                         sendChat("Encounter Creator","/w gm Created Legendary Action with the Name \"" + leg + "\".\n\nID: " + legid);
@@ -5140,7 +5646,9 @@ var EncounterCreator = EncounterCreator || (function() {
                                 dmgtype: "",
                                 range: "",
                                 tohit: 0,
-                                id: mythid
+                                id: mythid,
+                                found: false,
+                                atkfound: false
                             }
                         );
                         sendChat("Encounter Creator","/w gm Created Mythic Action with the Name \"" + myth + "\".\n\nID: " + mythid);
@@ -5152,12 +5660,235 @@ var EncounterCreator = EncounterCreator || (function() {
         }
     },
 
-    resetMonster = function(mon) {
+    removeTrait = function(mon,trait) {
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that Name!");
+        } else if (mon) {
+            trait=mon.traits.find(t => t.name==trait);
+            if (!trait) {
+                sendChat("Encounter Creator","/w gm Could not find a Trait with that Name!");
+            } else if (trait) {
+                let traits = findObjs({
+                    _type: 'attribute',
+                    _characterid: mon.id,
+                });
+                _.each(traits, function(object) {
+                    let name = object.get('name');
+                    if (name.includes(trait.id)) {
+                        object.remove();
+                    }
+                });
+                for (let i=0;i<mon.traits.length;i++) {
+                    if (mon.traits[i].name==trait.name) {
+                        mon.traits.splice(i);
+                    }
+                }
+                for (let i=0;i<state.monster.length;i++) {
+                    if (state.monster[i].name==mon.name) {
+                        state.monster[i]=mon;
+                    }
+                }
+                sendChat("Encoutner Creator",`/w gm Trait \"${trait.name}\" has been removed!`);
+            }
+        }
+    },
 
+    removeBA = function(mon,ba) {
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that Name!");
+        } else if (mon) {
+            ba=mon.bonus_actions.find(b => b.name==ba);
+            if (!ba) {
+                sendChat("Encounter Creator","/w gm Could not find a Bonus Action with that Name!");
+            } else if (ba) {
+                let bas = findObjs({
+                    _type: 'attribute',
+                    _characterid: mon.id,
+                });
+                _.each(bas, function(object) {
+                    let name = object.get('name');
+                    if (name.includes(ba.id)) {
+                        object.remove();
+                    }
+                });
+                for (let i=0;i<mon.bonus_actions.length;i++) {
+                    if (mon.bonus_actions[i].name==ba.name) {
+                        mon.bonus_actions.splice(i);
+                    }
+                }
+                for (let i=0;i<state.monster.length;i++) {
+                    if (state.monster[i].name==mon.name) {
+                        state.monster[i]=mon;
+                    }
+                }
+                sendChat("Encoutner Creator",`/w gm Bonus Action \"${ba.name}\" has been removed!`);
+            }
+        }
+    },
+
+    removeAct = function(mon,act) {
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that Name!");
+        } else if (mon) {
+            act=mon.actions.find(a => a.name==act);
+            if (!act) {
+                sendChat("Encounter Creator","/w gm Could not find an Action with that Name!");
+            } else if (act) {
+                let acts = findObjs({
+                    _type: 'attribute',
+                    _characterid: mon.id,
+                });
+                _.each(acts, function(object) {
+                    let name = object.get('name');
+                    if (name.includes(act.id)) {
+                        object.remove();
+                    }
+                });
+                for (let i=0;i<mon.actions.length;i++) {
+                    if (mon.actions[i].name==act.name) {
+                        mon.actions.splice(i);
+                    }
+                }
+                for (let i=0;i<state.monster.length;i++) {
+                    if (state.monster[i].name==mon.name) {
+                        state.monster[i]=mon;
+                    }
+                }
+                sendChat("Encoutner Creator",`/w gm Action \"${act.name}\" has been removed!`);
+            }
+        }
+    },
+
+    removeReact = function(mon,react) {
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that Name!");
+        } else if (mon) {
+            react=mon.reactions.find(r => r.name==act);
+            if (!react) {
+                sendChat("Encounter Creator","/w gm Could not find a Reaction with that Name!");
+            } else if (react) {
+                let reacts = findObjs({
+                    _type: 'attribute',
+                    _characterid: mon.id,
+                });
+                _.each(reacts, function(object) {
+                    let name = object.get('name');
+                    if (name.includes(react.id)) {
+                        object.remove();
+                    }
+                });
+                for (let i=0;i<mon.reactions.length;i++) {
+                    if (mon.reactions[i].name==react.name) {
+                        mon.reactions.splice(i);
+                    }
+                }
+                for (let i=0;i<state.monster.length;i++) {
+                    if (state.monster[i].name==mon.name) {
+                        state.monster[i]=mon;
+                    }
+                }
+                sendChat("Encoutner Creator",`/w gm Reaction \"${react.name}\" has been removed!`);
+            }
+        }
+    },
+
+    removeLeg = function(mon,leg) {
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that Name!");
+        } else if (mon) {
+            leg=mon.legendary_actions.find(l => l.name==leg);
+            if (!leg) {
+                sendChat("Encounter Creator","/w gm Could not find a Legendary Action with that Name!");
+            } else if (leg) {
+                let legs = findObjs({
+                    _type: 'attribute',
+                    _characterid: mon.id,
+                });
+                _.each(legs, function(object) {
+                    let name = object.get('name');
+                    if (name.includes(act.id)) {
+                        object.remove();
+                    }
+                });
+                for (let i=0;i<mon.legendary_actions.length;i++) {
+                    if (mon.legendary_actions[i].name==leg.name) {
+                        mon.legendary_actions.splice(i);
+                    }
+                }
+                for (let i=0;i<state.monster.length;i++) {
+                    if (state.monster[i].name==mon.name) {
+                        state.monster[i]=mon;
+                    }
+                }
+                sendChat("Encoutner Creator",`/w gm Legendary Action \"${leg.name}\" has been removed!`);
+            }
+        }
+    },
+
+    removeMyth = function(mon,myth) {
+        mon=state.monster.find(m => m.name==mon);
+        if (!mon) {
+            sendChat("Encounter Creator","/w gm Could not find a Monster with that Name!");
+        } else if (mon) {
+            myth=mon.actions.find(m => m.name==myth);
+            if (!myth) {
+                sendChat("Encounter Creator","/w gm Could not find a Mythic Action with that Name!");
+            } else if (myth) {
+                let myths = findObjs({
+                    _type: 'attribute',
+                    _characterid: mon.id,
+                });
+                _.each(myths, function(object) {
+                    let name = object.get('name');
+                    if (name.includes(myth.id)) {
+                        object.remove();
+                    }
+                });
+                for (let i=0;i<mon.mythic_actions.length;i++) {
+                    if (mon.mythic_actions[i].name==myth.name) {
+                        mon.mythic_actions.splice(i);
+                    }
+                }
+                for (let i=0;i<state.monster.length;i++) {
+                    if (state.monster[i].name==mon.name) {
+                        state.monster[i]=mon;
+                    }
+                }
+                sendChat("Encoutner Creator",`/w gm Mythic Action \"${myth.name}\" has been removed!`);
+            }
+        }
+    },
+
+    resetMonster = function(mon) {
+        for (let i=0;i<state.monster.length;i++) {
+            if (state.monster[i].name==mon) {
+                state.monster[i]=state.temp.monster;
+            }
+        }
+        sendChat("Encounter Creator",`/w gm The Monster \"${mon}\" has been reset!`);
     },
 
     createParty = function(party) {
-
+        let found=false;
+        for (let i=0;i<state.party.length;i++) {
+            if (state.party[i].name==party) {
+                found=true;
+            }
+        }
+        if (found==true) {
+            sendChat("Encounter Creator","/w gm A Party with that Name already exists!")
+        } else {
+            state.party.push({
+                name: party,
+                members: []
+            });
+            sendChat("Encounter Creator",`/w gm Party \"${party}\" has been created!`);
+        }
     },
 
     partyMenu = function(party) {
@@ -5169,8 +5900,68 @@ var EncounterCreator = EncounterCreator || (function() {
         var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
         var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
         var substyle = 'style="font-size: 11px; line-height: 13px; margin-top: -3px; font-style: italic;"';
-        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
+        var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: center;"';
+        var trstyle2 = 'style="border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc;"';
+        var tdstyle = 'style="border-right: 1px solid #cccccc;"';
+        party=state.party.find(p => p.name==party);
+        let partyList = [];
+        for (let i=0;i<state.party.length;i++) {
+            partyList.push(state.party[i].name);
+        }
+        for (let i=0;i<state.party.length;i++) {
+            partyList=String(partyList).replace(",","|");
+        }
+        if (!party) {
+            sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                '<div ' + headstyle + '>Party Menu</div>' + //--
+                '<div ' + arrowstyle + '></div>' + //--
+                '<div style="text-align:center;">Party: <a ' + astyle1 + '" href="!party --?{Party?|' + partyList + '}">Not selected...</a></div>' + //--
+                '<br><br>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!party --new ?{Name?|Insert Name}">Create new Party</a></div>' + //--
+                '</div>'
+            );
+        } else if (party) {
+            let memberList='';
+            if (party.members.length=0) {
+                let charList = [];
+                let players = findObjs({
+                    _type: 'player',
+                    playerIsGM: false,
+                });
+                _.each(players, function(player) {
+                    let playerid = player.get('_id');
+                    let chars = findObjs({
+                        _type: 'character',
+                        controlledby: playerid,
+                    }, {caseInsensitive: true});
+                    _.each(chars, function(char) {
+                        charList.push(char.get('name'));
+                    });
+                });
+                let len = charList.length;
+                for (let i=0;i<len;i++) {
+                    charList=String(charList).replace(",","|");
+                }
+                sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                    '<div ' + headstyle + '>Party Menu</div>' + //--
+                    '<div ' + arrowstyle + '></div>' + //--
+                    '<div style="text-align:center;">Party: <a ' + astyle1 + '" href="!party --?{Party?|' + partyList + '}">' + party.name + '</a></div>' + //--
+                    '<br>' + //--
+                    '<div style="text-align:center;"><b>Members</b></div>' + //--
+                    '<br><div style="text-align:center;">No members yet...</div>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!party --' + party.name + ' --add --name ?{Name?|' + charList + '}">Add Member</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!party --new ?{Name?|Insert Name}">Create new Party</a></div>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!party --' + party.name + ' --del">Delete Party</a></div>' + //--
+                    '</div>'
+                );
+            } else if (party.members.length>=1) {
+                for (let i=0;i<party.members.length;i++) {
 
+                }
+            }
+        }
     },
 
     partyAdd = function(party,char) {
