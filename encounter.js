@@ -16,9 +16,10 @@ API Commands (GM Only):
             --loot - Edits Loot Table
                 --add {Insert Item Name} --amount {Insert Amount} - Adds an item to the loot table
                 --rem {Insert Item Name} --amount {Insert Amount} - Removes an item from the loot table
+                --money {PP/GP/SP/CP} --add/rem --amount {Insert Amount} - Adds Currency
                 --{Insert existing Item Name} - Edits an Item inside the Encounter
-        --genloot {Insert amount} --minrare {Insert minimum rarity} --maxrare {Insert maximum rarity} - Generates a loot table
-            --overwrite true/false - Specifies if the old loot table should be replaced
+        --genloot {Insert amount} - Generates Loot
+            --overwrite true/false - Specifies if the old loot table should be replaced (Default: true)
         --loot - Shows the Loot table
         --monsters - Shows a list of all Monsters
         --submit - Finishes the encounter creation and creates Monsters as well as a Handout for loot
@@ -121,6 +122,9 @@ API Commands (GM Only):
         --add --name/id/sel {Insert Character Name/ID OR select Character Token} - Adds a Character to the Party
         --rem --name/id/sel {Insert Character Name/ID OR select Character Token} - Removes a Character from the Party
         --del - Deletes the Party
+            --confirm - Permanently deletes the Party
+            --cancel - Cancels the Deletion
+        --setname {Insert Name} - Sets the Name of the Party
 !loot - Pulls up the Loot Menu
     --new {Insert Item Name} - Creates a new Item on the Loot Table
         --value {Insert Number} - Sets the value of the Item
@@ -156,7 +160,12 @@ var EncounterCreator = EncounterCreator || (function() {
                 maxcr: 0,
                 loot: {
                     items: [],
-                    gold: 0,
+                    money: {
+                        pp: 0,
+                        gp: 0,
+                        sp: 0,
+                        cp: 0
+                    }
                 },
                 monsters: [],
                 party: []
@@ -165,13 +174,7 @@ var EncounterCreator = EncounterCreator || (function() {
     },
 
     setLootDefaults = function() {
-        state.loot = [
-            {
-                //Basics
-                items: [],
-                gold: 0,
-            },
-        ];
+        state.loot.item = []
     },
 
     setTempDefaults = function() {
@@ -486,7 +489,30 @@ var EncounterCreator = EncounterCreator || (function() {
                                             let amount=Number(args[5].replace("amount ",""));
                                             editEncounter(enc,"remloot",item,amount);
                                         }
-                                    } else if (!args[4].includes("add") && !args[4].includes("rem")) {
+                                    } else if (args[4].includes("money")) {
+                                        let currency=args[4].replace("money ","").toLowerCase();
+                                        if (currency!="pp" && currency!="gp" && currency!="sp" && currency!="cp") {
+                                            sendChat("Encounter Creator","/w gm Invalid Currency. Please choose PP, GP, SP or CP!");
+                                        } else {
+                                            if (!agrs[5]) {
+                                                sendChat("Encounter Creator","/w gm You must define whether you wish to add or remove Money!");
+                                            } else if (args[5]=="add") {
+                                                if (!args[6]) {
+                                                    sendChat("Encounter Creator","/w gm You must define the amount of Money you wish to add!");
+                                                } else if (args[6].includes("amount")) {
+                                                    let amount = args[6].replace("amount ","");
+                                                    editEncounter(enc,"money",args[3],currency,amount);
+                                                }
+                                            } else if (args[5]=="rem") {
+                                                if (!args[6]) {
+                                                    sendChat("Encounter Creator","/w gm You must define the amount of Money you wish to remove!");
+                                                } else if (args[6].includes("amount")) {
+                                                    let amount = args[6].replace("amount ","");
+                                                    editEncounter(enc,"money",args[3],currency,amount);
+                                                }
+                                            }
+                                        }
+                                    } else if (!args[4].includes("add") && !args[4].includes("rem") && !args[4].includes("money")) {
                                         item=args[4];
                                         if (!args[5]) {
                                             editEncounter(enc,"item",item);
@@ -536,28 +562,14 @@ var EncounterCreator = EncounterCreator || (function() {
                         } else if (args[2].includes("genloot")) {
                             let amount = Number(args[2].replace("genloot ",""));
                             if (!args[3]) {
-                                sendChat("Encounter Creator","/w gm You must define a minimum and maximum Rarity!");
-                            } else if (args[3].includes("minrare")) {
-                                let minrare = args[3].replace("minrare ","");
-                                let rarities="common,uncommon,rare,very rare,legendary";
-                                if (!rarities.includes(minrare.toLowerCase())) {
-                                    sendChat("Encounter Creator","/w gm Invalid Rarity!");
-                                } else if (rarities.includes(minrare.toLowerCase())) {
-                                    if (!args[4]) {
-                                        sendChat("Encounter Creator","/w gm You need to define a maximum Rarity!");
-                                    } else if (args[4].includes("maxrare")) {
-                                        let maxrare=args[4].replace("maxrare ","");
-                                        if (!rarities.includes(maxrare.toLowerCase())) {
-                                            sendChat("Encounter Creator","/w gm Invalid Rarity!");
-                                        } else if (rarities.includes(maxrare.toLowerCase())) {
-                                            if (!args[5]) {
-                                                genLoot(enc,amount,minrare,maxrare,true);
-                                            } else if (args[5].includes("overwrite")) {
-                                                let overwrite = Boolean(args[5].replace("overwrite ",""));
-                                                genLoot(enc,amount,minrare,maxrare,overwrite);
-                                            }
-                                        }
-                                    }
+                                genLoot(enc,amount,false,true);
+                            } else if (args[3].includes("hoard")) {
+                                let hoard = Boolean(args[3].replace("hoard ",""));
+                                if (!args[4]) {
+                                    genLoot(enc,amount,hoard,true);
+                                } else if (args[4].includes("overwrite")) {
+                                    let overwrite = Boolean(args[5].replace("overwrite ",""));
+                                    genLoot(enc,amount,hoard,overwrite);
                                 }
                             }
                         } else if (args[2]=="loot") {
@@ -1114,6 +1126,24 @@ var EncounterCreator = EncounterCreator || (function() {
                                     partyAdd(party,charid);
                                     partyMenu(party);
                                 }
+                            } else if (args[3]=="sel") {
+                                let selected = msg.selected;
+                                if (!selected) {
+                                    sendChat("Encounter Creator","/w gm You need to select a Token!");
+                                } else if (selected) {
+                                    let id = getIDsFromTokens(selected);
+                                    let char = findObjs({
+                                        _type: 'character',
+                                        _id: id
+                                    })[0];
+                                    if (!char) {
+                                        sendChat("Encounter Creator","/w gm An Error occurred while trying to fetch the ID of the selected Character. Maybe try using the Name instead.");
+                                    } else if (char) {
+                                        let charid = char.get('_id');
+                                        partyAdd(party,charid);
+                                        partyMenu(party);
+                                    }
+                                }
                             }
                         } else if (args[2]=="rem") {
                             if (!args[3]) {
@@ -1144,20 +1174,44 @@ var EncounterCreator = EncounterCreator || (function() {
                                     partyRem(party,charid);
                                     partyMenu(party);
                                 }
-                            }
-                        } else if (args[2]=="del") {
-                            deleteParty(party);
-                            partyMenu(undefined);
-                        } else if (args[2].includes("setname")) {
-                            let part = state.party.find(p => p.name==party);
-                            let name=args[2].replace("setname","");
-                            part.name=name;
-                            for (let i=0;i<state.party.length;i++) {
-                                if (state.party[i].name==party) {
-                                    state.party[i]=part;
+                            } else if (args[3]=="sel") {
+                                let selected = msg.selected;
+                                if (!selected) {
+                                    sendChat("Encounter Creator","/w gm You need to select a Token!");
+                                } else if (selected) {
+                                    let id = getIDsFromTokens(selected);
+                                    let char = findObjs({
+                                        _type: 'character',
+                                        _id: id
+                                    })[0];
+                                    if (!char) {
+                                        sendChat("Encounter Creator","/w gm An Error occurred while trying to fetch the ID of the selected Character. Maybe try using the Name instead.");
+                                    } else if (char) {
+                                        let charid = char.get('_id');
+                                        partyRem(party,charid);
+                                        partyMenu(party);
+                                    }
                                 }
                             }
-                            partyMenu(part);
+                        } else if (args[2]=="del") {
+                            if (!args[3]) {
+                                deleteParty(party);
+                            } else if (args[3]=="confirm") {
+                                deleteParty(party,true);
+                                partyMenu(undefined);
+                            } else if (args[3]=="cancel") {
+                                deleteParty(party,false);
+                                partyMenu(party);
+                            }
+                        } else if (args[2].includes("setname")) {
+                            let name=args[2].replace("setname","");
+                            sendChat("Encounter Creator",`/w gm Changed the Name of the Party \"${party.name}\" to \"${name}\".`);
+                            for (let i=0;i<state.party.length;i++) {
+                                if (state.party[i].name==party) {
+                                    state.party[i].name=name;
+                                }
+                            }
+                            partyMenu(name);
                         }
                     } else if (args[1].includes("new")) {
                         let name = args[1].replace("new ","");
@@ -1250,6 +1304,13 @@ var EncounterCreator = EncounterCreator || (function() {
             );
         }
     },
+
+    getIDsFromTokens = function (selected) {
+		return (selected || []).map(obj => getObj("graphic", obj._id))
+			.filter(x => !!x)
+			.map(token => token.get("represents"))
+			.filter(id => getObj("character", id || ""));
+	},
 
     createEnc = function(enc) {
         let test=state.encounter.find(e => e.name==enc);
@@ -1656,6 +1717,35 @@ var EncounterCreator = EncounterCreator || (function() {
                     itemEditor(enc.name,item.name,val1,val2,val3);
                 }
             break;
+            case 'money':
+                if (val1=="add") {
+                    val2=val2.toLowerCase();
+                    if (val2=="pp") {
+                        enc.loot.money.pp+=Number(val3);
+                    } else if (val2=="gp") {
+                        enc.loot.money.gp+=Number(val3);
+                    } else if (val2=="sp") {
+                        enc.loot.money.sp+=Number(val3);
+                    } else if (val2=="cp") {
+                        enc.loot.money.cp+=Number(val3);
+                    }
+                } else if (val2=="remove") {
+                    if (val2=="pp") {
+                        enc.loot.money.pp-=Number(val3);
+                    } else if (val2=="gp") {
+                        enc.loot.money.gp-=Number(val3);
+                    } else if (val2=="sp") {
+                        enc.loot.money.sp-=Number(val3);
+                    } else if (val2=="cp") {
+                        enc.loot.money.cp-=Number(val3);
+                    }
+                }
+            break;
+        }
+        for (let i=0;i<state.encounter.length;i++) {
+            if (state.encounter[i].name==enc.name) {
+                state.encounter[i]=enc;
+            }
         }
     },
 
@@ -1671,7 +1761,7 @@ var EncounterCreator = EncounterCreator || (function() {
         var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
         var trstyle2 = 'style="border-bottom: 1px solid #cccccc;"';
         var tdstyle = 'style="border-right: 1px solid #cccccc;"';
-        let items=state.loot.items;
+        let items=state.loot.item;
         if (!item) {
             let itemList='';
             let itemlist=[];
@@ -1693,6 +1783,13 @@ var EncounterCreator = EncounterCreator || (function() {
             sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
                 '<div ' + headstyle + '>Loot Menu</div>' + //--
                 '<div ' + arrowstyle + '></div>' + //--
+                '<div style="text-align:center;"><b>Money</b></div>' + //--
+                '<br>' + //--
+                '<table>' + //--
+                '<tr><td>Platinum: ' + enc.money.pp + '</td><td>Gold: ' + enc.money.gp + '</td></tr>' + //--
+                '<tr><td>Silver: ' + enc.money.sp + '</td><td>Copper: ' + enc.money.cp + '</td></tr>' + //--
+                '</table>' + //--
+                '<br>' + //--
                 '<div style="text-align:center;"><b>Items</b></div>' + //--
                 '<br>' + //--
                 '<table ' + tablestyle + '>' + //--
@@ -1706,6 +1803,8 @@ var EncounterCreator = EncounterCreator || (function() {
                 '<br><br>' + //--
                 '<div style="text-align:center;"><a ' + astyle2 + '" href="!loot --?{Item?|' + itemlist + '}">View Item</a></div>' + //--
                 '<div style="text-align:center;"><a ' + astyle2 + '" href="!loot --?{Item?|' + itemlist + '} --edit">Edit Item</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!loot --money --add --?{Currency?|PP|GP|SP|CP} --amount ?{Amount?|1}">Add Money</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!loot --money --rem --?{Currency?|PP|GP|SP|CP} --amount ?{Amount?|1}">Remove Money</a></div>' + //--
                 '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --?{Encounter?|' + encList + '}">Return to Encounter</a></div>' + //--
                 '</div>'
             );
@@ -1732,6 +1831,13 @@ var EncounterCreator = EncounterCreator || (function() {
                 sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
                     '<div ' + headstyle + '>Loot Menu</div>' + //--
                     '<div ' + arrowstyle + '></div>' + //--
+                    '<div style="text-align:center;"><b>Money</b></div>' + //--
+                    '<br>' + //--
+                    '<table>' + //--
+                    '<tr><td>Platinum: ' + enc.money.pp + '</td><td>Gold: ' + enc.money.gp + '</td></tr>' + //--
+                    '<tr><td>Silver: ' + enc.money.sp + '</td><td>Copper: ' + enc.money.cp + '</td></tr>' + //--
+                    '</table>' + //--
+                    '<br>' + //--
                     '<div style="text-align:center;"><b>Items</b></div>' + //--
                     '<br>' + //--
                     '<table ' + tablestyle + '>' + //--
@@ -1745,6 +1851,8 @@ var EncounterCreator = EncounterCreator || (function() {
                     '<br><br>' + //--
                     '<div style="text-align:center;"><a ' + astyle2 + '" href="!loot --?{Item?|' + itemlist + '}">View Item</a></div>' + //--
                     '<div style="text-align:center;"><a ' + astyle2 + '" href="!loot --?{Item?|' + itemlist + '} --edit">Edit Item</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!loot --money --add --?{Currency?|PP|GP|SP|CP} --amount ?{Amount?|1}">Add Money</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!loot --money --rem --?{Currency?|PP|GP|SP|CP} --amount ?{Amount?|1}">Remove Money</a></div>' + //--
                     '<div style="text-align:center;"><a ' + astyle2 + '" href="!enc --?{Encounter?|' + encList + '}">Return to Encounter</a></div>' + //--
                     '</div>'
                 );
@@ -1767,8 +1875,15 @@ var EncounterCreator = EncounterCreator || (function() {
                 sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
                     '<div ' + headstyle + '>Item Menu</div>' + //--
                     '<div ' + arrowstyle + '></div>' + //--
-                    '<div style="text-align:center;">Item: <a ' + astyle1 + '" href="!loot --?{Item?|' + itemList + '}">' + item.name + '</a></div>' + //--
-                    '<br><br>' + //--
+                    '<div style="text-align:center;"><b>Money</b></div>' + //--
+                    '<br>' + //--
+                    '<table>' + //--
+                    '<tr><td>Platinum: ' + enc.money.pp + '</td><td>Gold: ' + enc.money.gp + '</td></tr>' + //--
+                    '<tr><td>Silver: ' + enc.money.sp + '</td><td>Copper: ' + enc.money.cp + '</td></tr>' + //--
+                    '</table>' + //--
+                    '<br>' + //--
+                    '<div style="text-align:center;"><b>Item: </b><a ' + astyle1 + '" href="!loot --?{Item?|' + itemlist + '}">' + item.name + '</div>' + //--
+                    '<br>' + //--
                     '<table>' + //--
                     '<tr><td><b>Name: </b></td><td>' + item.name + '</td></tr>' + //--
                     '<tr><td><b>Rarity: </b></td><td>' + item.rarity + '</td></tr>' + //--
@@ -1778,6 +1893,8 @@ var EncounterCreator = EncounterCreator || (function() {
                     '</table>' + //--
                     '<br><br>' + //--
                     '<div style="text-align:center;"><a ' + astyle2 + '" href="!loot --' + item.name + ' --edit">Edit Item</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!loot --money --add --?{Currency?|PP|GP|SP|CP} --amount ?{Amount?|1}">Add Money</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!loot --money --rem --?{Currency?|PP|GP|SP|CP} --amount ?{Amount?|1}">Remove Money</a></div>' + //--
                     '<div style="text-align:center;"><a ' + astyle2 + '" href="!loot">View all Items</a></div>' + //--
                     '</div>'
                 );
@@ -2069,7 +2186,7 @@ var EncounterCreator = EncounterCreator || (function() {
             for (let i=0;i<state.encounter.length;i++) {
                 encList=String(encList).replace(",","|");
             }
-            let desc=item.desc.split(';');
+            desc=desc.split(';');
             if (item.attack==true) {
                 sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
                     '<div ' + headstyle + '>Item Editor</div>' + //--
@@ -2079,8 +2196,8 @@ var EncounterCreator = EncounterCreator || (function() {
                     '<br><br>' + //--
                     '<table>' + //--
                     '<tr><td><b>Name: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --name ?{Name?|Insert Name}">' + name + '</a></td></tr>' + //--
-                    '<tr><td><b>Price: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --value ?{Price?|1}">' + price + ' GP</a></td></tr>' + //--
-                    '<tr><td><b>Rarity: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --rarity ?{Rarity?|Common|Uncommon|Rare|Very Rare|Legendary|Artifact}">' + rarity + '</a></td></tr>' + //--
+                    '<tr><td><b>Price: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --value ?{Price?|1}">' + val + ' GP</a></td></tr>' + //--
+                    '<tr><td><b>Rarity: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --rarity ?{Rarity?|Common|Uncommon|Rare|Very Rare|Legendary|Artifact}">' + rare + '</a></td></tr>' + //--
                     '<tr><td><b>Type: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --type ?{Type?|Melee Weapon|Ranged Weapon|Light Armor|Medium Armor|Heavy Armor|Shield|Potion|Scroll|Wondrous Item|Misc}">' + type + '</a></td></tr>' + //--
                     '<tr><td><b>Has Attack: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --attack ?{Attack?|true|false}">' + atk + '</a></td></tr>' + //--
                     '<tr><td><b>Damage: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --damage ?{Damage Dice?|1d6} --type ?{Damage Type?|Insert Damage Type}">' + dmg + ' ' + dmgtype + '</a></td></tr>' + //--
@@ -2105,8 +2222,8 @@ var EncounterCreator = EncounterCreator || (function() {
                     '<br><br>' + //--
                     '<table>' + //--
                     '<tr><td><b>Name: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --name ?{Name?|Insert Name}">' + name + '</a></td></tr>' + //--
-                    '<tr><td><b>Price: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --value ?{Price?|1}">' + price + ' GP</a></td></tr>' + //--
-                    '<tr><td><b>Rarity: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --rarity ?{Rarity?|Common|Uncommon|Rare|Very Rare|Legendary|Artifact}">' + rarity + '</a></td></tr>' + //--
+                    '<tr><td><b>Price: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --value ?{Price?|1}">' + val + ' GP</a></td></tr>' + //--
+                    '<tr><td><b>Rarity: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --rarity ?{Rarity?|Common|Uncommon|Rare|Very Rare|Legendary|Artifact}">' + rare + '</a></td></tr>' + //--
                     '<tr><td><b>Type: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --type ?{Type?|Melee Weapon|Ranged Weapon|Light Armor|Medium Armor|Heavy Armor|Shield|Potion|Scroll|Wondrous Item|Misc}">' + type + '</a></td></tr>' + //--
                     '<tr><td><b>Has Attack: </b></td><td><a ' + astyle1 + '" href="!enc --' + enc.name + ' --edit --loot --' + item.name + ' --attack ?{Attack?|true|false}">' + atk + '</a></td></tr>' + //--
                     '<tr><td><b>Description (1/2): </b></td><td>' + desc[0] + '</td></tr>' + //--
@@ -2122,8 +2239,540 @@ var EncounterCreator = EncounterCreator || (function() {
         }
     },
 
-    genLoot = function(enc,amount,minrare,maxrare,overwrite) {
-
+    genLoot = function(enc,amount,overwrite) {
+        enc=state.encounter.find(e => e.name==enc);
+        amount = Number(amount);
+        if (!enc) {
+            sendChat("Encounter Creator","/w gm Could not find an Encounter with that Name!");
+        } else if (enc) {
+            let rand;
+            if (overwrite==true) {
+                rand=randomInteger(100);
+                if (enc.maxcr<=4) {
+                    if (rand<=30) {
+                        let val=0;
+                        for (let i=0;i<5;i++) {
+                            val+=randomInteger(6);
+                        }
+                        enc.loot.money.cp+=val;
+                    } else if (rand<=60) {
+                        let val=0;
+                        for (let i=0;i<4;i++) {
+                            val+=randomInteger(6);
+                        }
+                        enc.loot.money.sp+=val;
+                    } else if (rand<=85) {
+                        let val=0;
+                        for (let i=0;i<3;i++) {
+                            val+=randomInteger(6);
+                        }
+                        enc.loot.money.cp+=val;
+                    } else if (rand<=100) {
+                        let val=randomInteger(6);
+                        enc.loot.money.cp+=val;
+                    }
+                    enc.list.items=items;
+                } else if (enc.maxcr<=10) {
+                    if (rand<=30) {
+                        let val=0;
+                        for (let i=0;i<4;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=100;
+                        enc.loot.money.cp+=val;
+                        val=randomInteger(6)*10;
+                        enc.loot.money.sp+=val;
+                        } else if (rand<=60) {
+                            let val=0;
+                        for (let i=0;i<6;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=10;
+                        enc.loot.money.sp+=val;
+                        val=0;
+                        for (let i=0;i<2;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=10;
+                        enc.loot.money.gp+=val;
+                    } else if (rand<=85) {
+                        let val=0;
+                        for (let i=0;i<2;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=10;
+                        enc.loot.money.sp+=val;
+                        val=0;
+                        for (let i=0;i<4;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=10;
+                        enc.loot.money.gp+=val;
+                    } else if (rand<=100) {
+                        let val=0;
+                        for (let i=0;i<2;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=10;
+                        enc.loot.money.gp+=val;
+                        val=0;
+                        for (let i=0;i<3;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=10;
+                        enc.loot.money.pp+=val;
+                    }
+                } else if (enc.maxcr<=16) {
+                    if (rand<=30) {
+                        let val=0;
+                        for (let i=0;i<4;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=100;
+                        enc.loot.money.sp+=val;
+                        val=randomInteger(6)*100;
+                        enc.loot.money.gp+=val;
+                    } else if (rand<=60) {
+                        let val=0;
+                        for (let i=0;i<4;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=100;
+                        enc.loot.money.gp+=val;
+                        val=randomInteger(6);
+                        enc.loot.money.pp+=val;
+                    } else if (rand<=85) {
+                        let val=0
+                        for (let i=0;i<3;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=100;
+                        enc.loot.money.gp+=val;
+                        val=randomInteger(6)*10;
+                        enc.loot.money.pp+=val;
+                    } else if (rand<=100) {
+                        let val=0;
+                        for (let i=0;i<2;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=100;
+                        enc.loot.money.gp+=val;
+                        val=0;
+                        for (let i=0;i<2;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=10;
+                        enc.loot.money.pp+=val;
+                    }
+                } else if (enc.maxcr>=17) {
+                    if (rand<=15) {
+                        let val=0;
+                        for (let i=0;i<3;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=1000;
+                        enc.loot.money.sp+=val;
+                        val=0;
+                        for (let i=0;i<8;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=100;
+                        enc.loot.money.gp+=val;
+                    } else if (rand<=55) {
+                        let val=randomInteger(6)*1000;
+                        enc.loot.money.gp+=val;
+                        val=randomInteger(6)*100;
+                        enc.loot.money.pp+=val;
+                    } else if (rand<=100) {
+                        enc.loot.money.gp+=randomInteger(6)*1000;
+                        let val=0;
+                        for (let i=0;i<2;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=100;
+                        enc.loot.money.pp+=val;
+                    }
+                }
+                let items = [];
+                for (let i=0;i<amount;i++) {
+                    rand=randomInteger(100);
+                    if (enc.maxcr<=4) {
+                        if (rand>=98) {
+                            let list = state.items.find(it => it.rarity=="very rare");
+                            let randit = randomInteger(list.length-1);
+                            items.push(list[randit]);
+                        } else if (rand>=86) {
+                            let list = state.items.find(it => it.rarity=="very rare");
+                            let randit = randomInteger(list.length-1);
+                            items.push(list[randit]);
+                        } else if (rand>=76) {
+                            let list = state.items.find(it => it.rarity=="rare");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=61) {
+                            let list = state.items.find(it => it.rarity=="uncommon");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=37) {
+                            let list = state.items.find(it => it.rarity=="common");
+                            for (let j=0;j<randomInteger(6);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        }
+                    } else if (enc.maxcr<=10) {
+                        if (rand>=99) {
+                            let list = state.items.find(it => it.rarity=="legendary");
+                            let randit = randomInteger(list.length-1);
+                            items.push(list[randit]);
+                        } else if (rand>=95) {
+                            let list = state.items.find(it => it.rarity=="very rare");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=64) {
+                            let list = state.items.find(it => it.rarity=="rare");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=45) {
+                            let list = state.items.find(it => it.rarity=="uncommon");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=28) {
+                            let list = state.items.find(it => it.rarity=="common");
+                            for (let j=0;j<randomInteger(6);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        }
+                    } else if (enc.maxcr<=16) {
+                        if (rand>=83) {
+                            let list = state.items.find(it => it.rarity=="legendary");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=67) {
+                            let list = state.items.find(it => it.rarity=="very rare");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=30) {
+                            let list = state.items.find(it => it.rarity=="rare");
+                            for (let j=0;j<randomInteger(6);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=16) {
+                            let list = state.items.find(it => it.rarity=="uncommon");
+                            for (let j=0;j<randomInteger(6);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                            list = state.items.find(it => it.rarity=="common");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        }
+                    } else if (enc.maxcr>=17) {
+                        if (rand>=73) {
+                            let list = state.items.find(it => it.rarity=="legendary");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=15) {
+                            let list = state.items.find(it => it.rarity=="very rare");
+                            for (let j=0;j<randomInteger(6);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=3) {
+                            let list = state.items.find(it => it.rarity=="rare");
+                            for (let j=0;j<randomInteger(8);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        }
+                    }
+                }
+                enc.list.items=items;
+            } else if (overwrite==false) {
+                rand=randomInteger(100);
+                if (enc.maxcr<=4) {
+                    if (rand<=30) {
+                        let val=0;
+                        for (let i=0;i<5;i++) {
+                            val+=randomInteger(6);
+                        }
+                        enc.loot.money.cp+=val;
+                    } else if (rand<=60) {
+                        let val=0;
+                        for (let i=0;i<4;i++) {
+                            val+=randomInteger(6);
+                        }
+                        enc.loot.money.sp+=val;
+                    } else if (rand<=85) {
+                        let val=0;
+                        for (let i=0;i<3;i++) {
+                            val+=randomInteger(6);
+                        }
+                        enc.loot.money.cp+=val;
+                    } else if (rand<=100) {
+                        let val=randomInteger(6);
+                        enc.loot.money.cp+=val;
+                    }
+                } else if (enc.maxcr<=10) {
+                    if (rand<=30) {
+                        let val=0;
+                        for (let i=0;i<4;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=100;
+                        enc.loot.money.cp+=val;
+                        val=randomInteger(6)*10;
+                        enc.loot.money.sp+=val;
+                        } else if (rand<=60) {
+                            let val=0;
+                        for (let i=0;i<6;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=10;
+                        enc.loot.money.sp+=val;
+                        val=0;
+                        for (let i=0;i<2;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=10;
+                        enc.loot.money.gp+=val;
+                    } else if (rand<=85) {
+                        let val=0;
+                        for (let i=0;i<2;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=10;
+                        enc.loot.money.sp+=val;
+                        val=0;
+                        for (let i=0;i<4;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=10;
+                        enc.loot.money.gp+=val;
+                    } else if (rand<=100) {
+                        let val=0;
+                        for (let i=0;i<2;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=10;
+                        enc.loot.money.gp+=val;
+                        val=0;
+                        for (let i=0;i<3;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=10;
+                        enc.loot.money.pp+=val;
+                    }
+                } else if (enc.maxcr<=16) {
+                    if (rand<=30) {
+                        let val=0;
+                        for (let i=0;i<4;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=100;
+                        enc.loot.money.sp+=val;
+                        val=randomInteger(6)*100;
+                        enc.loot.money.gp+=val;
+                    } else if (rand<=60) {
+                        let val=0;
+                        for (let i=0;i<4;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=100;
+                        enc.loot.money.gp+=val;
+                        val=randomInteger(6);
+                        enc.loot.money.pp+=val;
+                    } else if (rand<=85) {
+                        let val=0
+                        for (let i=0;i<3;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=100;
+                        enc.loot.money.gp+=val;
+                        val=randomInteger(6)*10;
+                        enc.loot.money.pp+=val;
+                    } else if (rand<=100) {
+                        let val=0;
+                        for (let i=0;i<2;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=100;
+                        enc.loot.money.gp+=val;
+                        val=0;
+                        for (let i=0;i<2;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=10;
+                        enc.loot.money.pp+=val;
+                    }
+                } else if (enc.maxcr>=17) {
+                    if (rand<=15) {
+                        let val=0;
+                        for (let i=0;i<3;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=1000;
+                        enc.loot.money.sp+=val;
+                        val=0;
+                        for (let i=0;i<8;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=100;
+                        enc.loot.money.gp+=val;
+                    } else if (rand<=55) {
+                        let val=randomInteger(6)*1000;
+                        enc.loot.money.gp+=val;
+                        val=randomInteger(6)*100;
+                        enc.loot.money.pp+=val;
+                    } else if (rand<=100) {
+                        enc.loot.money.gp+=randomInteger(6)*1000;
+                        let val=0;
+                        for (let i=0;i<2;i++) {
+                            val+=randomInteger(6);
+                        }
+                        val*=100;
+                        enc.loot.money.pp+=val;
+                    }
+                }
+                let items=[];
+                for (let i=0;i<amount;i++) {
+                    rand=randomInteger(100);
+                    if (enc.maxcr<=4) {
+                        if (rand>=98) {
+                            let list = state.items.find(it => it.rarity=="very rare");
+                            let randit = randomInteger(list.length-1);
+                            items.push(list[randit]);
+                        } else if (rand>=86) {
+                            let list = state.items.find(it => it.rarity=="very rare");
+                            let randit = randomInteger(list.length-1);
+                            items.push(list[randit]);
+                        } else if (rand>=76) {
+                            let list = state.items.find(it => it.rarity=="rare");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=61) {
+                            let list = state.items.find(it => it.rarity=="uncommon");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=37) {
+                            let list = state.items.find(it => it.rarity=="common");
+                            for (let j=0;j<randomInteger(6);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        }
+                    } else if (enc.maxcr<=10) {
+                        if (rand>=99) {
+                            let list = state.items.find(it => it.rarity=="legendary");
+                            let randit = randomInteger(list.length-1);
+                            items.push(list[randit]);
+                        } else if (rand>=95) {
+                            let list = state.items.find(it => it.rarity=="very rare");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=64) {
+                            let list = state.items.find(it => it.rarity=="rare");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=45) {
+                            let list = state.items.find(it => it.rarity=="uncommon");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=28) {
+                            let list = state.items.find(it => it.rarity=="common");
+                            for (let j=0;j<randomInteger(6);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        }
+                    } else if (enc.maxcr<=16) {
+                        if (rand>=83) {
+                            let list = state.items.find(it => it.rarity=="legendary");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=67) {
+                            let list = state.items.find(it => it.rarity=="very rare");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=30) {
+                            let list = state.items.find(it => it.rarity=="rare");
+                            for (let j=0;j<randomInteger(6);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=16) {
+                            let list = state.items.find(it => it.rarity=="uncommon");
+                            for (let j=0;j<randomInteger(6);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                            list = state.items.find(it => it.rarity=="common");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        }
+                    } else if (enc.maxcr>=17) {
+                        if (rand>=73) {
+                            let list = state.items.find(it => it.rarity=="legendary");
+                            for (let j=0;j<randomInteger(4);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=15) {
+                            let list = state.items.find(it => it.rarity=="very rare");
+                            for (let j=0;j<randomInteger(6);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        } else if (rand>=3) {
+                            let list = state.items.find(it => it.rarity=="rare");
+                            for (let j=0;j<randomInteger(8);j++) {
+                                let randit = randomInteger(list.length-1);
+                                items.push(list[randit]);
+                            }
+                        }
+                    }
+                }
+                for (let i=0;i<items.length;i++) {
+                    enc.loot.items.push(items[i]);
+                }
+            }
+        }
     },
 
     submitEnc = function(enc,ignore) {
@@ -2133,7 +2782,7 @@ var EncounterCreator = EncounterCreator || (function() {
         var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
         enc=state.encounter.find(e => e.name==enc);
         if (!enc) {
-            sendChat("Encounter Creator","/w gm Could not find an Encounter with that name.");
+            sendChat("Encounter Creator","/w gm Could not find an Encounter with that Name!");
         } else if (enc) {
             let monsters = enc.monsters;
             if (!ignore) {
@@ -5921,27 +6570,26 @@ var EncounterCreator = EncounterCreator || (function() {
                 '</div>'
             );
         } else if (party) {
-            let memberList='';
+            let charList = [];
+            let players = findObjs({
+                _type: 'player',
+                playerIsGM: false,
+            });
+            _.each(players, function(player) {
+                let playerid = player.get('_id');
+                let chars = findObjs({
+                    _type: 'character',
+                    controlledby: playerid,
+                }, {caseInsensitive: true});
+                _.each(chars, function(char) {
+                    charList.push(char.get('name'));
+                });
+            });
+            let len = charList.length;
+            for (let i=0;i<len;i++) {
+                charList=String(charList).replace(",","|");
+            }
             if (party.members.length=0) {
-                let charList = [];
-                let players = findObjs({
-                    _type: 'player',
-                    playerIsGM: false,
-                });
-                _.each(players, function(player) {
-                    let playerid = player.get('_id');
-                    let chars = findObjs({
-                        _type: 'character',
-                        controlledby: playerid,
-                    }, {caseInsensitive: true});
-                    _.each(chars, function(char) {
-                        charList.push(char.get('name'));
-                    });
-                });
-                let len = charList.length;
-                for (let i=0;i<len;i++) {
-                    charList=String(charList).replace(",","|");
-                }
                 sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
                     '<div ' + headstyle + '>Party Menu</div>' + //--
                     '<div ' + arrowstyle + '></div>' + //--
@@ -5957,23 +6605,205 @@ var EncounterCreator = EncounterCreator || (function() {
                     '</div>'
                 );
             } else if (party.members.length>=1) {
+                let members = '';
+                let memberList = [];
                 for (let i=0;i<party.members.length;i++) {
+                    let member = party.members[i];
+                    if (member.mc1) {
+                        if (member.mc2) {
+                            if (member.mc3) {
+                                members += '<tr ' + trstyle2 + '><td ' + tdstyle + '>' + member.owner + '</td><td ' + tdstyle + '>' + member.name + '</td><td ' + tdstyle + '>' + member.sub + ' ' + member.class + ' ' + member.baselvl + ', ' + member.ms1 + ' ' + member.mc1 + ' ' + member.ml1 + ', ' + member.ms2 + ' ' + member.mc2 + ' ' + member.ml2 + ', ' + member.ms3 + ' ' + member.mc3 + ' ' + member.ml3 + '</td><td>' + member.lvl + '</td></tr>';
+                            } else {
+                                members += '<tr ' + trstyle2 + '><td ' + tdstyle + '>' + member.owner + '</td><td ' + tdstyle + '>' + member.name + '</td><td ' + tdstyle + '>' + member.sub + ' ' + member.class + ' ' + member.baselvl + ', ' + member.ms1 + ' ' + member.mc1 + ' ' + member.ml1 + ', ' + member.ms2 + ' ' + member.mc2 + ' ' + member.ml2 + '</td><td>' + member.lvl + '</td></tr>';
+                            }
+                        } else {
+                            members += '<tr ' + trstyle2 + '><td ' + tdstyle + '>' + member.owner + '</td><td ' + tdstyle + '>' + member.name + '</td><td ' + tdstyle + '>' + member.sub + ' ' + member.class + ' ' + member.baselvl + ', ' + member.ms1 + ' ' + member.mc1 + ' ' + member.ml1 + '</td><td>' + member.lvl + '</td></tr>';
+                        }
+                    } else {
+                        members += '<tr ' + trstyle2 + '><td ' + tdstyle + '>' + member.owner + '</td><td ' + tdstyle + '>' + member.name + '</td><td ' + tdstyle + '>' + member.sub + ' ' + member.class + ' ' + member.baselvl + '</td><td>' + member.lvl + '</td></tr>';
+                    }
+                    memberList.push(member.name);
+                }
+                let len = memberList.length;
+                for (let i=0;i<len;i++) {
+                    memberList=String(memberList).replace(",","|");
+                }
+                sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                    '<div ' + headstyle + '>Party Menu</div>' + //--
+                    '<div ' + arrowstyle + '></div>' + //--
+                    '<div style="text-align:center;"><b>Members</b></div>' + //--
+                    '<br>' + //--
+                    '<table ' + tablestyle + '>' + //--
+                    '<thead>' + //--
+                    '<tr ' + trstyle + '><th ' + tdstyle + '>Player</th><th ' + tdstyle + '>Character</th><th ' + tdstyle + '>Class</th><th>Total Level</th></tr>' + //--
+                    '</thead>' + //--
+                    '<tbody>' + //--
+                    members + //--
+                    '</tbody>' + //--
+                    '</table>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><a ' + astyle3 + '" href="!party --' + party.name + ' --add --name ?{Character?|' + charList + '}">Add Member</a>' + //--
+                    '<a ' + astyle3 + '" href="!party --' + party.name + ' --rem --name ?{Character?|' + memberList + '}">Remove Member</a></div>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!party --new ?{Name?|Insert Name}">Create new Party</a></div>' + //--
+                    '<br><br>' + //--
+                    '<div style="text-align:center;"><a ' + astyle2 + '" href="!party --del">Delete Party</a></div>' + //--
+                    '</div>'
+                );
+            }
+        }
+    },
 
+    partyAdd = function(party,charid) {
+        party = state.party.find(p => p.name==party);
+        if (!party) {
+            sendChat("Encounter Creator","/w gm Could not find a Party with that Name!");
+        } else if (party) {
+            let char = findObjs({
+                _type: 'character',
+                _id: charid,
+            }, {caseInesnsitive: true})[0];
+            if (!char) {
+                sendChat("Encounter Creator","/w gm Could not find a Character with that Name! Make sure a Sheet for the Character exists.");
+            } else if (char) {
+                let player = findObjs({
+                    _type: 'player',
+                    _id: char.controlledby,
+                }, {caseInsensitive: true})[0];
+                if (!player) {
+                    sendChat("Encounter Creator","/w gm Error: Could not find the Owner of the Character. Please assign the Sheet to the Player and give them the right to control the Character.");
+                }
+                let attr = findObjs({
+                    _type: 'attribute',
+                    _characterid: char.get('_id'),
+                }, {caseInsensitive: true})[0];
+                if (attr.get('multiclass1_flag') == 1) {
+                    if (attr.get('multiclass2_flag') == 1) {
+                        if (attr.get('multiclass3_flag') == 1) {
+                            party.members.push({
+                                name: char.get('name'),
+                                id: char.get('_id'),
+                                lvl: attr.get('level'),
+                                class: attr.get('class'),
+                                baselvl: attr.get('base_level'),
+                                sub: attr.get('subclass'),
+                                mc1: attr.get('multiclass1'),
+                                ms1: attr.get('multiclass1_subclass'),
+                                ml1: attr.get('multiclass1_level'),
+                                mc2: attr.get('multiclass2'),
+                                ms2: attr.get('multiclass2_subclass'),
+                                ml2: attr.get('multiclass2_level'),
+                                mc3: attr.get('multiclass3'),
+                                ms3: attr.get('multiclass3_subclass'),
+                                ml3: attr.get('multiclass3_level')
+                            });
+                        } else if (attr.get('multiclass3_flag') == 0 || !attr.get('multiclass3_flag')) {
+                            party.members.push({
+                                name: char.get('name'),
+                                id: char.get('_id'),
+                                lvl: attr.get('level'),
+                                class: attr.get('class'),
+                                baselvl: attr.get('base_level'),
+                                sub: attr.get('subclass'),
+                                mc1: attr.get('multiclass1'),
+                                ms1: attr.get('multiclass1_subclass'),
+                                ml1: attr.get('multiclass1_level'),
+                                mc2: attr.get('multiclass2'),
+                                ms2: attr.get('multiclass2_subclass'),
+                                ml2: attr.get('multiclass2_level')
+                            });
+                        }
+                    } else if (attr.get('multiclass2_flag') == 0 || !attr.get('multiclass2_flag')) {
+                        party.members.push({
+                            name: char.get('name'),
+                            id: char.get('_id'),
+                            lvl: attr.get('level'),
+                            class: attr.get('class'),
+                            baselvl: attr.get('base_level'),
+                            sub: attr.get('subclass'),
+                            mc1: attr.get('multiclass1'),
+                            ms1: attr.get('multiclass1_subclass'),
+                            ml1: attr.get('multiclass1_level')
+                        });
+                    }
+                } else if (attr.get('multiclass1_flag') == 0 || !attr.get('multiclass1_flag')) {
+                    party.members.push({
+                        name: char.get('name'),
+                        id: char.get('_id'),
+                        lvl: attr.get('level'),
+                        class: attr.get('class'),
+                        baselvl: attr.get('base_level'),
+                        sub: attr.get('subclass')
+                    });
                 }
             }
         }
     },
 
-    partyAdd = function(party,char) {
-
+    partyRem = function(party,charid) {
+        party = state.party.find(p => p.name == party);
+        if (!party) {
+            sendChat("Encounter Creator","/w gm Could not find a Party with that Name!");
+        } else if (party) {
+            let char = findObjs({
+                _type: 'character',
+                _id: charid
+            })[0];
+            if (!char) {
+                sendChat("Encounter Creator","/w gm Could not find that Character! Maybe check if you made any mistakes while inputting the Information.");
+            } else if (char) {
+                if (party.members.length==0) {
+                    sendChat("Encounter Creator","/w gm This Party does not have any Members!");
+                } else if (party.members.length>=1) {
+                    let found=false;
+                    for (let i=0;i<party.members.length;i++) {
+                        if (party.members[i].name==char.get('name')) {
+                            found=true;
+                            party.members.splice(i);
+                        }
+                    }
+                    if (found==false) {
+                        sendChat("Encounter Creator","/w gm That Character is not in the Party!");
+                    } else if (found==true) {
+                        sendChat("Encounter Creator","/w gm Removed the Character from the Party.");
+                        for (let i=0;i<state.party.length;i++) {
+                            if (state.party[i].name==party.name) {
+                                state.party[i]=party;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     },
 
-    partyRem = function(party,char) {
-
-    },
-
-    deleteParty = function(party) {
-
+    deleteParty = function(party,confirmed) {
+        var divstyle = 'style="width: 260px; border: 1px solid black; background-color: #ffffff; padding: 5px;"';
+        var astyle1 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 100px;';
+        var astyle2 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 150px;';
+        var astyle3 = 'style="text-align:center; border: 1px solid black; margin: 1px; background-color: #7E2D40; border-radius: 4px;  box-shadow: 1px 1px 1px #707070; width: 80px;';
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%;"';
+        var arrowstyle = 'style="border: none; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 195px solid rgb(126, 45, 64); margin-bottom: 2px; margin-top: 2px;"';
+        var headstyle = 'style="color: rgb(126, 45, 64); font-size: 18px; text-align: left; font-variant: small-caps; font-family: Times, serif;"';
+        if (confirmed!=true && confirmed!=false) {
+            sendChat("Encounter Creator","/w gm <div " + divstyle + ">" + //--
+                '<div ' + headstyle + '>Party Deletion</div>' + //--
+                '<div ' + arrowstyle + '></div>' + //--
+                '<div style="text-align:center;">Are you sure you want to permanently delete the Party \"' + party + '\"?</div>' + //--
+                '<br><br>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!party --' + party + ' --del --confirm">Confirm</a></div>' + //--
+                '<div style="text-align:center;"><a ' + astyle2 + '" href="!party --' + party + ' --del --cancel">Cancel</a></div>' + //--
+                '</div>'
+            );
+        } else if (confirmed==true) {
+            for (let i=0;i<state.party.length;i++) {
+                if (state.party[i].name==party) {
+                    state.party.splice(i);
+                }
+            }
+            sendChat("Encounter Creator",`/w gm Party \"${party}\" has been deleted!`);
+        } else if (confirmed==false) {
+            sendChat("Encounter Creator","/w gm Party Deletion has been cancelled.");
+        }
     },
 
     checkDefaults = function() {
