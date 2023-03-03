@@ -4,7 +4,7 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.6 | :x: |
+| 0.9 | ✅ |
 
 ## Reporting a Bug/Issue
 
