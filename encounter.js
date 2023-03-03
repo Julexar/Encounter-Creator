@@ -149,7 +149,7 @@ API Commands (GM Only):
 var EncounterCreator = EncounterCreator || (function() {
     'use strict';
 
-    var version='0.6',
+    var version='0.9',
 
     setEncounterDefaults = function() {
         state.encounter = [
