@@ -2772,7 +2772,45 @@ var EncounterCreator = EncounterCreator || (function() {
                     enc.loot.items.push(items[i]);
                 }
             }
+            for (let i=0;i<state.encounter.length;i++) {
+                if (state.encounter[i].name==enc.name) {
+                    state.encounter[i]=enc;
+                }
+            }
+            lootHandout(enc.name);
         }
+    },
+
+    lootHandout = function(enc) {
+        enc=state.encounter.find(e => e.name==enc);
+        var tablestyle ='style="text-align:center; font-size: 12px; width: 100%; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc;"';
+        var trstyle2 = 'style="border-bottom: 1px solid #cccccc;"';
+        var tdstyle = 'style="border-right: 1px solid #cccccc;"';
+        let handout = createObj('handout', {
+            name: `Loot Table for Encounter \"${enc.name}\"`
+        });
+        let items='';
+        for (let i=0;i<enc.loot.items.length;i++) {
+            let item = enc.loot.items[i];
+            let desc=item.desc.split(';');
+            items+='<tr ' + trstyle2 + '><td ' + tdstyle + '>' + item.name + '</td><td ' + tdstyle + '>' + desc[0] + '</td><td>' + item.value + ' GP</td></tr>';
+        }
+        handout.set('notes','<div style=text-align:center;"><b>Money</b></div>' + //--
+            '<br><table' + tablestyle + '>' + //--
+            '<tr ' + trstyle + '><td ' + tdstyle + '>PP: ' + enc.loot.money.pp + '</td><td>GP: ' + enc.loot.money.gp + '</td></tr>' + //--
+            '<tr><td ' + tdstyle + '>SP: ' + enc.loot.money.sp + '</td><td>CP: ' + enc.loot.money.cp + '</td></tr>' + //--
+            '</table>' + //--
+            '<br>' + //--
+            '<div style="text-align:center;"><b>Items</b></div>' + //--
+            '<table ' + tablestyle + '>' + //--
+            '<thead>' + //--
+            '<tr><th ' + tdstyle + '>Name</th><th ' + tdstyle + '>Description</th><th>Price (GP)</th></tr>' + //--
+            '</thead>' + //--
+            '<tbody>' + //--
+            items + //--
+            '</tbody>' + //--
+            '</table>'
+        );
     },
 
     submitEnc = function(enc,ignore) {
@@ -4551,45 +4589,51 @@ var EncounterCreator = EncounterCreator || (function() {
         if (test) {
             sendChat("Encounter Creator","/w gm A Monster with that Name exists already, please choose a different Name!");
         } else if (!test) {
-            let monster=[
-                {
-                    //Basics
-                    name: mon,
-                    type: "",
-                    ac: 10,
-                    actype: "",
-                    hp: 0,
-                    speed: "",
-                    amount: 1,
-                    save: [],
-                    skill: [],
-                    vuln: "",
-                    res: "",
-                    dmgimm: "",
-                    condimm: "",
-                    cr: 0,
-                    pb: 0,
-                    caster: false,
-                    caster_lvl: 0,
-                    spell_atk_mod: 0,
-                    spell_dc_mod: 0,
-                    cast_ability: "",
-                    bonusact: false,
-                    react: false,
-                    legendary: 0,
-                    mythic: false,
-                    mythic_desc: "",
-                    traits: [],
-                    actions: [],
-                    bonus_actions: [],
-                    reactions: [],
-                    legendary_actions: [],
-                    mythic_actions: []
-                }
-            ];
+            let monster= {
+                //Basics
+                name: mon,
+                type: "",
+                ac: 10,
+                actype: "",
+                hp: 0,
+                speed: "",
+                amount: 1,
+                save: [],
+                skill: [],
+                vuln: "",
+                res: "",
+                dmgimm: "",
+                condimm: "",
+                cr: 0,
+                pb: 0,
+                caster: false,
+                caster_lvl: 0,
+                spell_atk_mod: 0,
+                spell_dc_mod: 0,
+                cast_ability: "",
+                bonusact: false,
+                react: false,
+                legendary: 0,
+                mythic: false,
+                mythic_desc: "",
+                traits: [],
+                actions: [],
+                bonus_actions: [],
+                reactions: [],
+                legendary_actions: [],
+                mythic_actions: []
+            }
+            createMonSheet(monster);
             state.monster.push(monster[0]);
             sendChat("Encounter Creator",`/w gm Created new Monster with the Name \"${mon}\".`);
         }
+    },
+
+    createMonSheet = function(monster) {
+        createObj('character', {
+            name: monster.name,
+        });
+        checkMonUpdate(monster.name);
     },
 
     deleteMon = function(mon) {
