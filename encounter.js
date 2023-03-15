@@ -149,7 +149,7 @@ API Commands (GM Only):
 var EncounterCreator = EncounterCreator || (function() {
     'use strict';
 
-    var version='0.9',
+    var version='0.9.1',
 
     setEncounterDefaults = function() {
         state.encounter = [];
@@ -1089,7 +1089,6 @@ var EncounterCreator = EncounterCreator || (function() {
         var trstyle = 'style="border-top: 1px solid #cccccc; border-bottom: 1px solid #cccccc; border-left: 1px solid #cccccc; border-right: 1px solid #cccccc; text-align: left;"';
         enc=state.encounter.find(e => e.name==enc);
         let encounters=[];
-        log(enc);
         if (enc==undefined) {
             if (state.encounter.length>=1) {
                 for (let i=0;i<state.encounter.length;i++) {
